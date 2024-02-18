@@ -28,6 +28,11 @@ const exampleEvents = [
 const HomeScreen = () => {
   const [events, setEvents] = useState(exampleEvents);
   const [selectedEvent, setSelectedEvent] = useState();
+  const [selectedEventPress, renderSelectedEventContent] = useState();
+
+  const _onPressEvent = () => {
+    console.log(renderSelectedEventContent(selectedEventPress));
+  };
 
   const _onLongPressEvent = (event) => {
     setSelectedEvent(event);
@@ -65,6 +70,7 @@ const HomeScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <TimelineCalendar
+        onPressEvent={_onPressEvent}
         viewMode="week"
         events={events}
         onLongPressEvent={_onLongPressEvent}
