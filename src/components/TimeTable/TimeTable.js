@@ -9,6 +9,13 @@ import TimeTableView, { genTimeBlock } from 'react-native-timetable';
 
 const events_data = [
   {
+    title: "Persian",
+    startTime: genTimeBlock("SAT", 12),
+    endTime: genTimeBlock("SAT", 13, 50),
+    location: "Classroom A1",
+    extra_descriptions: ["Cyrus", "G"],
+  },
+  {
     title: "Math",
     startTime: genTimeBlock("WED", 9),
     endTime: genTimeBlock("WED", 10, 50),
