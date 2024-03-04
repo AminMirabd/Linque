@@ -3,6 +3,7 @@ import {
   Text,
   StyleSheet,
   Pressable,
+  TouchableOpacity,
   ActivityIndicator,
 } from "react-native";
 import React from "react";
@@ -18,7 +19,7 @@ const Button = ({
   loading = false,
 }) => {
   return (
-    <Pressable
+    <TouchableOpacity
       onPress={onPress}
       className={`rounded-10 w-[70%] py-15 self-center ${style} ${
         type.toUpperCase() === "TERTIARY" ? "bg-transparent" : "bg-primary "
@@ -35,7 +36,7 @@ const Button = ({
           {children}
         </Text>
       )}
-    </Pressable>
+    </TouchableOpacity>
   );
 };
 

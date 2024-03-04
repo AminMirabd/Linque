@@ -5,12 +5,19 @@ import {
   StyleSheet,
   useWindowDimensions,
   KeyboardAvoidingView,
+  Dimensions,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import Logo from "../../../assets/WaterlooCDSB-Logo.png";
 import { auth } from "../../../firebase";
 import Button from "../../components/customElements/button";
 import Input from "../../components/customElements/input";
+import {
+  ALERT_TYPE,
+  Dialog,
+  AlertNotificationRoot,
+} from "react-native-alert-notification";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 // import { useNavigation } from '@react-navigation/native'
 
 const SignInScreen = ({ navigation }) => {
@@ -45,7 +52,41 @@ const SignInScreen = ({ navigation }) => {
         const user = userCredentials.user;
         console.log("Signed in with " + JSON.stringify(user));
       })
-      .catch((error) => alert(error.message));
+      .catch((error) => {
+        console.log("Error signing in: ", error.code);
+        switch (error.code) {
+          case "auth/user-not-found":
+            Dialog.show({
+              type: ALERT_TYPE.DANGER,
+              title: "Ops!",
+              textBody: "Incorrect Email and/or Password!",
+              button: "Try Again",
+              autoClose: false,
+              onHide: () => setShowModal(false),
+            });
+            break;
+          case "auth/wrong-password":
+            Dialog.show({
+              type: ALERT_TYPE.DANGER,
+              title: "Ops!",
+              textBody: "Incorrect Email and/or Password!",
+              button: "Try Again",
+              autoClose: false,
+              onHide: () => {},
+            });
+            break;
+          case "auth/invalid-credential":
+            Dialog.show({
+              type: ALERT_TYPE.DANGER,
+              title: "Ops!",
+              textBody: "Invalid credentials",
+              button: "Try Again",
+              autoClose: false,
+              onHide: () => {},
+            });
+            break;
+        }
+      });
   };
 
   const { height } = useWindowDimensions();
@@ -56,48 +97,47 @@ const SignInScreen = ({ navigation }) => {
     console.warn("FP");
   };
   return (
-    <KeyboardAvoidingView style={styles.root}>
-      <Image
-        source={Logo}
-        style={[styles.logo, { height: height * 0.25 }]}
-        resizeMode="contain"
-      />
-      <View className="w-[90%] self-center">
-        <Input
-          placeholder="Username"
-          value={username}
-          setValue={setUsername}
-          secureTextEntry={false}
-        />
-        <Input
-          placeholder="Password"
-          value={password}
-          setValue={setPassword}
-          secureTextEntry={true}
-        />
-      </View>
-      <Button onPress={handleSignIn} style="mt-20">
-        Sign In
-      </Button>
-      {/* TERTIARY */}
-      <Button onPress={handleSignUp} style="mt-20" type="TERTIARY">
-        Forgot password?
-      </Button>
-    </KeyboardAvoidingView>
+    <AlertNotificationRoot>
+      <KeyboardAwareScrollView className="bg-white">
+        <View
+          style={{ height: Dimensions.get("window").height }}
+          className="items-center justify-center flex-1 p-screen"
+        >
+          <Image
+            source={Logo}
+            className="w-[300px] h-[150px] self-center mb-100"
+            resizeMode="contain"
+          />
+
+          <Input
+            placeholder="Username"
+            value={username}
+            setValue={setUsername}
+            secureTextEntry={false}
+          />
+          <Input
+            placeholder="Password"
+            value={password}
+            setValue={setPassword}
+            secureTextEntry={true}
+          />
+
+          <Button onPress={handleSignIn} style="mt-20">
+            Sign In
+          </Button>
+
+          {/* TERTIARY */}
+          <Button onPress={handleSignUp} style="mt-20" type="TERTIARY">
+            Forgot password?
+          </Button>
+        </View>
+      </KeyboardAwareScrollView>
+    </AlertNotificationRoot>
   );
 };
 //changed onForgotPasswordPressed to handleSignUp
 
 const styles = StyleSheet.create({
-  root: {
-    alignItems: "center",
-    padding: 20,
-    flex: 1,
-    backgroundColor: "#fafafa",
-    alignItems: "center",
-    justifyContent: "center",
-    fontWeight: "bold",
-  },
   logo: {
     width: 200,
     maxWidth: 300,
