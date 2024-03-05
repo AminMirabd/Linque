@@ -12,6 +12,7 @@ const PageContainer = ({
   navigation = null,
   keyboardScroll = false,
   title = "",
+  pointerEvents = "auto",
   onPress = () => {
     navigation.goBack();
   },
@@ -22,6 +23,7 @@ const PageContainer = ({
         className={`flex-1 w-full h-full bg-white p-screen ${style} `}
         contentContainerStyle={{
           paddingBottom: 100,
+          pointerEvents: pointerEvents,
         }}
         showsVerticalScrollIndicator={false}
       >

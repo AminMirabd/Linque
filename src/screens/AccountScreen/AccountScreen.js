@@ -1,4 +1,11 @@
-import { View, Text, Alert, TouchableOpacity, Image } from "react-native";
+import {
+  View,
+  Text,
+  Alert,
+  TouchableOpacity,
+  Image,
+  ActivityIndicator,
+} from "react-native";
 import React, { useState, useEffect } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
@@ -14,6 +21,7 @@ import {
 } from "../../../utils/firebaseOperations";
 import InfoContainer from "../../components/users/infoContainer";
 import Input from "../../components/customElements/input";
+import Colors from "../../../utils/Colors";
 
 const AccountScreen = ({ navigation }) => {
   const [editMode, setEditMode] = useState(false);
@@ -83,12 +91,14 @@ const AccountScreen = ({ navigation }) => {
         return;
       } else {
         setImage(result.assets[0].uri);
-        // setInfoCargada(false);
-        updateImage(result.assets[0].uri);
+        setProcedureLoading(true);
+        updateImage(result.assets[0].uri).then(() => {
+          setProcedureLoading(false);
+        });
       }
     }
     if (result.canceled) {
-      // setInfoCargada(true);
+      setProcedureLoading(false);
     }
   };
 
@@ -168,7 +178,7 @@ const AccountScreen = ({ navigation }) => {
   };
 
   return (
-    <PageContainer keyboardScroll>
+    <PageContainer pointerEvents={procedureLoading && "none"} keyboardScroll>
       {userInfoLoading ? (
         <>
           <Text>Loading...</Text>
@@ -195,44 +205,38 @@ const AccountScreen = ({ navigation }) => {
             activeOpacity={editMode ? 0.2 : 1}
             onPress={editMode ? pickImage : () => {}}
           >
-            {userData.photo !== "" ? (
-              <>
-                <View className="w-[200px] h-[200px] rounded-full bg-grayLowContrast items-center justify-center overflow-hidden">
-                  <Image
-                    className="object-cover w-full h-full"
-                    source={userData.photo !== "" && { uri: userData.photo }}
-                  />
-                </View>
-                {editMode && (
-                  <View className="items-center justify-center ml-10">
-                    <View className="items-center justify-center rounded-full w-50 h-50 bg-grayLowContrast">
-                      <Text className="text-white font-bold text-[20px]">
-                        ➕
+            <View className="w-[200px] h-[200px] rounded-full bg-grayLowContrast items-center justify-center overflow-hidden">
+              {procedureLoading ? (
+                <ActivityIndicator size="large" color={Colors.primary} />
+              ) : (
+                <>
+                  {userData.photo !== "" ? (
+                    <>
+                      <Image
+                        className="object-cover w-full h-full"
+                        source={
+                          userData.photo !== "" && { uri: userData.photo }
+                        }
+                      />
+                    </>
+                  ) : (
+                    <>
+                      <Text className="text-[70px] text-grayHighContranst font-bold text-center">
+                        {userData.name && userData.name.split("")[0]}
+                        {userData.lastName && userData.lastName.split("")[0]}
                       </Text>
-                    </View>
-                    <Text>Edit photo</Text>
-                  </View>
-                )}
-              </>
-            ) : (
-              <>
-                <View className="w-[200px] h-[200px] rounded-full bg-grayLowContrast items-center justify-center">
-                  <Text className="text-[70px] text-grayHighContranst font-bold text-center">
-                    {userData.name && userData.name.split("")[0]}
-                    {userData.lastName && userData.lastName.split("")[0]}
-                  </Text>
+                    </>
+                  )}
+                </>
+              )}
+            </View>
+            {editMode && (
+              <View className="items-center justify-center ml-10">
+                <View className="items-center justify-center rounded-full w-50 h-50 bg-grayLowContrast">
+                  <Text className="text-white font-bold text-[20px]">➕</Text>
                 </View>
-                {editMode && (
-                  <View className="items-center justify-center ml-10">
-                    <View className="items-center justify-center rounded-full w-50 h-50 bg-grayLowContrast">
-                      <Text className="text-white font-bold text-[20px]">
-                        ➕
-                      </Text>
-                    </View>
-                    <Text>Add photo</Text>
-                  </View>
-                )}
-              </>
+                <Text>{userData.photo !== "" ? "Edit" : "Add"} photo</Text>
+              </View>
             )}
           </TouchableOpacity>
 
