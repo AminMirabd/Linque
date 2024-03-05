@@ -12,19 +12,26 @@ import Logo from "../../../assets/WaterlooCDSB-Logo.png";
 import { auth } from "../../../firebase";
 import Button from "../../components/customElements/button";
 import Input from "../../components/customElements/input";
+import * as SecureStore from "expo-secure-store";
 import {
   ALERT_TYPE,
   Dialog,
   AlertNotificationRoot,
 } from "react-native-alert-notification";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-// import { useNavigation } from '@react-navigation/native'
+import { useLogin } from "../../../context/LoginProvider";
+const keyObjectSaved = "currentSession";
 
 const SignInScreen = ({ navigation }) => {
-  const [username, setUsername] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const { setIsLoggedIn, setUid } = useLogin();
 
   //const navigation = useNavigation
+
+  useEffect(() => {
+    getEncryptedSession(keyObjectSaved);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -35,22 +42,30 @@ const SignInScreen = ({ navigation }) => {
     return unsubscribe;
   }, []);
 
-  const handleSignUp = () => {
-    auth
-      .createUserWithEmailAndPassword(username, password)
-      .then((userCredentials) => {
-        const user = userCredentials.user;
-        console.log("Signed in with as " + user);
-      })
-      .catch((error) => alert(error.message));
-  };
+  // const handleSignUp = () => {
+  //   auth
+  //     .createUserWithEmailAndPassword(email, password)
+  //     .then((userCredentials) => {
+  //       const user = userCredentials.user;
+  //     })
+  //     .catch((error) => alert(error.message));
+  // };
 
-  const handleSignIn = () => {
+  const handleSignIn = (values, actions = false, isLoggedIn = false) => {
     auth
-      .signInWithEmailAndPassword(username, password)
+      .signInWithEmailAndPassword(values.email, values.password)
       .then((userCredentials) => {
-        const user = userCredentials.user;
-        console.log("Signed in with " + JSON.stringify(user));
+        setUid(userCredentials.user.uid);
+
+        if (!isLoggedIn) {
+          encryptSession(
+            keyObjectSaved,
+            JSON.stringify({ email: values.email, password: values.password }),
+            actions
+          );
+        } else {
+          setIsLoggedIn(true);
+        }
       })
       .catch((error) => {
         console.log("Error signing in: ", error.code);
@@ -89,13 +104,26 @@ const SignInScreen = ({ navigation }) => {
       });
   };
 
-  const { height } = useWindowDimensions();
-  const onSignInPressed = () => {
-    console.warn("Sign in");
-  };
-  const onForgotPasswordPressed = () => {
-    console.warn("FP");
-  };
+  async function encryptSession(key, value, actions) {
+    await SecureStore.setItemAsync(key, value, {
+      keychainAccessible: SecureStore.WHEN_UNLOCKED,
+    });
+    setIsLoggedIn(true);
+  }
+  async function getEncryptedSession(key) {
+    let resultAux = await SecureStore.getItemAsync(key);
+    if (resultAux) {
+      let resulObj = JSON.parse(resultAux);
+      handleSignIn(
+        { email: resulObj.email, password: resulObj.password },
+        false,
+        true
+      );
+    } else {
+      console.log("No values stored under that key.");
+    }
+  }
+
   return (
     <AlertNotificationRoot>
       <KeyboardAwareScrollView className="bg-white">
@@ -110,9 +138,9 @@ const SignInScreen = ({ navigation }) => {
           />
 
           <Input
-            placeholder="Username"
-            value={username}
-            setValue={setUsername}
+            placeholder="Email"
+            value={email}
+            setValue={setEmail}
             secureTextEntry={false}
           />
           <Input
@@ -122,12 +150,17 @@ const SignInScreen = ({ navigation }) => {
             secureTextEntry={true}
           />
 
-          <Button onPress={handleSignIn} style="mt-20">
+          <Button
+            onPress={() => {
+              handleSignIn({ email, password });
+            }}
+            style="mt-20"
+          >
             Sign In
           </Button>
 
           {/* TERTIARY */}
-          <Button onPress={handleSignUp} style="mt-20" type="TERTIARY">
+          <Button style="mt-20" type="TERTIARY">
             Forgot password?
           </Button>
         </View>
@@ -135,15 +168,5 @@ const SignInScreen = ({ navigation }) => {
     </AlertNotificationRoot>
   );
 };
-//changed onForgotPasswordPressed to handleSignUp
-
-const styles = StyleSheet.create({
-  logo: {
-    width: 200,
-    maxWidth: 300,
-    height: 100,
-    marginTop: -260,
-  },
-});
 
 export default SignInScreen;

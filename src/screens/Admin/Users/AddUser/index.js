@@ -1,10 +1,6 @@
 import { View, Text } from "react-native";
 import React, { useState } from "react";
-import {
-  ALERT_TYPE,
-  Dialog,
-  AlertNotificationRoot,
-} from "react-native-alert-notification";
+import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import PageContainer from "../../../../components/global/pageContainer";
 import { auth } from "../../../../../firebase";
 import Input from "../../../../components/customElements/input";
@@ -118,11 +114,10 @@ const AddUser = (props) => {
           setValue={setPassword}
         />
       </View>
-      <AlertNotificationRoot>
-        <Button onPress={createUserWithEmailAndPassword} loading={loading}>
-          Create User
-        </Button>
-      </AlertNotificationRoot>
+
+      <Button onPress={createUserWithEmailAndPassword} loading={loading}>
+        Create User
+      </Button>
     </PageContainer>
   );
 };

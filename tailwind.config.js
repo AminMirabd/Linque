@@ -12,6 +12,8 @@ module.exports = {
         primary: "#132E35",
         transparent: "transparent",
         black: "#2c2d2c",
+        grayBlue: "#A3B7D2",
+        grayHighContranst: "#7C838C",
         grayLowContrast: "#e8e8e8",
       },
       padding: {

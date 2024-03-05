@@ -9,6 +9,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
 import AdminNavigation from "./src/screens/Admin/AdminNavigation";
+import LoginProvider from "./context/LoginProvider";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -58,35 +59,21 @@ const SignedInScreens = () => {
 
 export default function App() {
   return (
-    <NavigationContainer>
-      <Stack.Navigator>
-        <Stack.Screen
-          options={{ headerShown: false }}
-          name="SignIn"
-          component={SignInScreen}
-        />
-        <Stack.Screen
-          options={{ headerShown: false }}
-          name="SignedInScreens"
-          component={SignedInScreens}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <LoginProvider>
+      <NavigationContainer>
+        <Stack.Navigator>
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="SignIn"
+            component={SignInScreen}
+          />
+          <Stack.Screen
+            options={{ headerShown: false }}
+            name="SignedInScreens"
+            component={SignedInScreens}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
+    </LoginProvider>
   );
 }
-
-// <NavigationContainer>
-// <Tab.Navigator>
-
-//   <Tab.Screen options={{headerShown : false}} name="SignIn" component={SignInScreen} />
-//   <Tab.Screen options={{headerShown : false}} name="Home" component={HomeScreen} />
-
-// </Tab.Navigator>
-// </NavigationContainer>
-
-// <NavigationContainer>
-// <Stack.Navigator>
-//   <Stack.Screen options={{headerShown : false}} name="SignIn" component={SignInScreen} />
-//   <Stack.Screen options={{headerShown : false}} name="Home" component={HomeScreen} />
-// </Stack.Navigator>
-// </NavigationContainer>
