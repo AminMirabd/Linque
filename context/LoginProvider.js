@@ -7,6 +7,7 @@ const LoginProvider = ({ children }) => {
   const [email, setEmail] = useState("");
   const [uid, setUid] = useState("");
   const [userData, setUserData] = useState({});
+  const [loggedInSessionEdited, setLoggedInSessionEdited] = useState(false);
 
   return (
     <LoginContext.Provider
@@ -19,6 +20,8 @@ const LoginProvider = ({ children }) => {
         setUid,
         userData,
         setUserData,
+        loggedInSessionEdited,
+        setLoggedInSessionEdited,
       }}
     >
       {children}

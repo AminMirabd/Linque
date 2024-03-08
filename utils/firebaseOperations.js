@@ -50,6 +50,16 @@ export const getUserInfoDB = async (uid, setUserData) => {
     console.error("Error getting user", e);
   }
 };
+export const getAllUsersDB = async (setUsers) => {
+  const q = query(collection(database, "users"));
+  onSnapshot(q, (querySnapshot) => {
+    const users = [];
+    querySnapshot.forEach((doc) => {
+      users.push(doc.data());
+    });
+    setUsers(users);
+  });
+};
 
 //Update functions
 export const updateUserProfilePicture = async (user, url) => {
