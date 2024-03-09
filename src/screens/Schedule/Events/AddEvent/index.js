@@ -219,7 +219,7 @@ const AddEvent = (props) => {
             renderItem={renderItemUser}
             ItemSeparatorComponent={itemSeparator}
             keyExtractor={(item, index) => {
-              index.toString();
+              item.UID;
             }}
           />
         </View>

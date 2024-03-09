@@ -75,7 +75,6 @@ export const getAllUsersDB = async (setUsers) => {
     setUsers(users);
   });
 };
-
 export const getEventsDB = async (from, to) => {
   const events = [];
   const eventsRef = collection(database, "events");
@@ -101,6 +100,18 @@ export const getEventsDB = async (from, to) => {
   } catch (error) {
     console.error("Error fetching events:", error);
     return [];
+  }
+};
+export const getEventInfoDB = async (id, setEventData) => {
+  try {
+    const docRef = doc(database, "events", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      setEventData(docSnap.data());
+    }
+  } catch (e) {
+    console.error("Error getting event", e);
   }
 };
 

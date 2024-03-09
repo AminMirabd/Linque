@@ -57,20 +57,6 @@ const Calendar = (props) => {
       });
   };
 
-  const _onDragCreateEnd = (event) => {
-    const randomId = Math.random().toString(36).slice(2, 10);
-    const newEvent = {
-      id: randomId,
-      title: "Event " + eventCount,
-      start: event.start,
-      end: event.end,
-      color: "#A3C7D6",
-    };
-    setEventCount(eventCount + 1);
-
-    setEvents((prev) => [...prev, newEvent]);
-  };
-
   return (
     <PageContainer style={"relative"}>
       <DynamicOptions
@@ -99,17 +85,15 @@ const Calendar = (props) => {
       <TimelineCalendar
         viewMode={viewMode === 0 ? "day" : "week"}
         events={events}
-        onDragCreateEnd={_onDragCreateEnd}
         onDateChanged={_onDateChanged}
         theme={{ loadingBarColor: Colors.primary }}
         isLoading={isLoading}
+        onPressEvent={(event) => {
+          navigation.navigate("ViewEvent", { id: event.id });
+        }}
         renderEventContent={(event) => {
           if (viewMode === 1) {
-            return (
-              <Text className="text-white text-[10px] text-center">
-                {event.title}
-              </Text>
-            );
+            return <CalendarItem event={event} weekView />;
           } else {
             return <CalendarItem event={event} />;
           }

@@ -6,9 +6,6 @@ import PageContainer from "../../../../components/global/pageContainer";
 const EditUser = ({ route, navigation }) => {
   const { id } = route.params;
   const [procedureLoading, setProcedureLoading] = useState(false);
-  useEffect(() => {
-    console.log(id);
-  }, [id]);
 
   return (
     <PageContainer
