@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import * as ImagePicker from "expo-image-picker";
+import * as SecureStore from "expo-secure-store";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { auth, firebase } from "../../../../firebase";
@@ -21,16 +22,23 @@ import {
 } from "../../../../utils/firebaseOperations";
 import PageContainer from "../../global/pageContainer";
 import Colors from "../../../../utils/Colors";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useLogin } from "../../../../context/LoginProvider";
+const keyObjectSaved = "currentSession";
 
 const UserTemplate = ({
   userUID,
   isOwnProfile = false,
   procedureLoading,
   setProcedureLoading,
+  navigation,
 }) => {
-  const { uid, setLoggedInSessionEdited, loggedInSessionEdited } = useLogin();
+  const {
+    uid,
+    setLoggedInSessionEdited,
+    loggedInSessionEdited,
+    setIsLoggedIn,
+  } = useLogin();
 
   const [userData, setUserData] = useState({});
   const [userEdit, setUserEdit] = useState({});
@@ -189,15 +197,22 @@ const UserTemplate = ({
         text: "Sign Out",
         style: "destructive",
         onPress: () => {
-          auth
-            .signOut()
-            .then(() => {
-              navigation.replace("SignIn");
-            })
-            .catch((error) => alert(error.message));
+          logOut();
         },
       },
     ]);
+  };
+
+  const logOut = async () => {
+    try {
+      await auth.signOut();
+      await SecureStore.deleteItemAsync(keyObjectSaved).then((res) => {
+        navigation.replace("SignIn");
+        setIsLoggedIn(false);
+      });
+    } catch (error) {
+      console.log("error logoUT", error);
+    }
   };
 
   return userInfoLoading ? (

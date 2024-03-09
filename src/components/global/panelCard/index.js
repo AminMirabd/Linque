@@ -8,7 +8,7 @@ const PanelCard = ({ icon, title, description, onPress }) => {
       onPress={onPress}
     >
       {/* Section icon */}
-      <View className="items-center justify-center bg-purple-400 rounded-full w-80 h-80">
+      <View className="items-center justify-center bg-blue-600 rounded-full w-80 h-80">
         <Text className="text-[35px] leading-none">{icon}</Text>
       </View>
 

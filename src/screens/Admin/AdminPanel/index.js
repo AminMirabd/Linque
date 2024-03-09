@@ -24,6 +24,14 @@ const AdminPanel = (props) => {
           navigation.navigate("ManageUsers");
         }}
       />
+      <PanelCard
+        title="Create event"
+        description="Create a new event in the calendar"
+        icon="🗓️"
+        onPress={() => {
+          navigation.navigate("AddEvent");
+        }}
+      />
     </PageContainer>
   );
 };

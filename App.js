@@ -1,15 +1,13 @@
-import { StatusBar } from "expo-status-bar";
-import { StyleSheet, Text, View, SafeAreaView } from "react-native";
 import SignInScreen from "./src/screens/SignInScreen";
-import HomeScreen from "./src/screens/HomePage/HomeScreen";
 import AccountScreen from "./src/screens/AccountScreen/AccountScreen";
 import ChatScreen from "./src/screens/ChatScreen";
 import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { Ionicons } from "@expo/vector-icons";
-import AdminNavigation from "./src/screens/Admin/AdminNavigation";
+import AdminNavigation from "./src/screens/navigation/AdminNavigation";
 import LoginProvider from "./context/LoginProvider";
+import ScheduleNavigation from "./src/screens/navigation/ScheduleNavigation";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -28,7 +26,7 @@ const SignedInScreens = () => {
       />
       <Tab.Screen
         name="Schedule"
-        component={HomeScreen}
+        component={ScheduleNavigation}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" color={color} size={size} />

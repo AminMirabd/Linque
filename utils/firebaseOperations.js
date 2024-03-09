@@ -36,6 +36,21 @@ export const addUserDB = async (user) => {
   }
 };
 
+export const addEventDB = async (event) => {
+  const eventsRef = collection(database, "events");
+  try {
+    await setDoc(doc(eventsRef, event.id), event);
+
+    for (const employeeUID of event.employeesAssigned) {
+      await updateDoc(doc(database, "users", employeeUID), {
+        events: arrayUnion(event.id),
+      });
+    }
+  } catch (error) {
+    alert(`Error creating event in firebase ${error} `);
+  }
+};
+
 //Get functions
 
 export const getUserInfoDB = async (uid, setUserData) => {
@@ -59,6 +74,34 @@ export const getAllUsersDB = async (setUsers) => {
     });
     setUsers(users);
   });
+};
+
+export const getEventsDB = async (from, to) => {
+  const events = [];
+  const eventsRef = collection(database, "events");
+
+  try {
+    const querySnapshot = await getDocs(eventsRef);
+    querySnapshot.forEach((doc) => {
+      const eventData = doc.data();
+      const eventFrom = eventData.date.from.toDate().toISOString(); // Convert Timestamp to ISO string
+      const eventTo = eventData.date.to.toDate().toISOString(); // Convert Timestamp to ISO string
+
+      if (eventFrom <= to && eventTo >= from) {
+        const formattedEventData = {
+          ...eventData,
+          start: eventFrom,
+          end: eventTo,
+        };
+        events.push(formattedEventData);
+      }
+    });
+
+    return events;
+  } catch (error) {
+    console.error("Error fetching events:", error);
+    return [];
+  }
 };
 
 //Update functions

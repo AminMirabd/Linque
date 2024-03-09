@@ -1,10 +1,10 @@
 import { View, Text } from "react-native";
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import AdminPanel from "../AdminPanel";
-import AddUser from "../Users/AddUser";
-import ManageUsers from "../Users/ManageUsers";
-import EditUser from "../Users/EditUser/EditUser";
+import AdminPanel from "../../Admin/AdminPanel";
+import AddUser from "../../Admin/Users/AddUser";
+import ManageUsers from "../../Admin/Users/ManageUsers";
+import EditUser from "../../Admin/Users/EditUser/EditUser";
 const Stack = createNativeStackNavigator();
 
 const AdminNavigation = () => {

@@ -24,7 +24,8 @@ import Input from "../../components/customElements/input";
 import Colors from "../../../utils/Colors";
 import UserTemplate from "../../components/users/userTemplate";
 
-const AccountScreen = () => {
+const AccountScreen = (props) => {
+  const { navigation } = props;
   const [procedureLoading, setProcedureLoading] = useState(false);
 
   const { uid } = useLogin();
@@ -36,6 +37,7 @@ const AccountScreen = () => {
         isOwnProfile
         procedureLoading={procedureLoading}
         setProcedureLoading={setProcedureLoading}
+        navigation={navigation}
       />
     </PageContainer>
   );
