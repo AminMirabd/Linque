@@ -133,7 +133,7 @@ const SignInScreen = ({ navigation }) => {
         >
           <Image
             source={Logo}
-            className="w-[300px] h-[150px] self-center mb-100"
+            className="w-[300px] h-[200px] self-center mb-100"
             resizeMode="contain"
           />
 

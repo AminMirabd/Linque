@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
 import { TouchableOpacity, Image, View, Text } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble } from 'react-native-gifted-chat';
 import { collection, addDoc, orderBy, query, onSnapshot, doc, getDoc } from 'firebase/firestore';
 import { auth, database } from '../../../firebase';
 import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
+import Colors from "../../../utils/Colors";
 
 export default function Chat() {
   const [messages, setMessages] = useState([]);
@@ -60,7 +61,7 @@ export default function Chat() {
       text,
       user: {
         ...user,
-        avatar, // Include avatar URL in the message document
+        avatar, 
       },
     });
     setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
@@ -71,12 +72,23 @@ export default function Chat() {
       messages={messages}
       onSend={messages => onSend(messages)}
       user={{
-        _id: auth?.currentUser?.uid, // Ensure this matches the user ID used in messages
-        // Optionally fetch and set the current user's avatar as well
+        _id: auth?.currentUser?.uid, 
       }}
       showUserAvatar={true}
       messagesContainerStyle={{
-        backgroundColor: '#fff', // Set the background color to white
+        backgroundColor: '#fff', 
+      }}
+      renderBubble={(props) => {
+        const backgroundColor = props.currentMessage.user._id === auth?.currentUser?.uid ? Colors.primary : '#gray';
+        return (
+          <Bubble
+            {...props}
+            wrapperStyle={{
+              right: { backgroundColor: backgroundColor }, // Your messages
+              left: {}, // Messages from others can be customized here as well
+            }}
+          />
+        );
       }}
     />
   );

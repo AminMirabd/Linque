@@ -8,6 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import AdminNavigation from "./src/screens/navigation/AdminNavigation";
 import LoginProvider from "./context/LoginProvider";
 import ScheduleNavigation from "./src/screens/navigation/ScheduleNavigation";
+import Colors from "./utils/Colors";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
