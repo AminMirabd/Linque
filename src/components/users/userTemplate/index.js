@@ -229,6 +229,7 @@ const UserTemplate = ({
         onPress={() => {
           setEditMode(!editMode);
         }}
+        style={{backgroundColor: Colors.primary}}
       >
         <Text className="font-semibold text-center text-white">
           {editMode ? "Cancel" : "Edit"}
@@ -237,8 +238,16 @@ const UserTemplate = ({
 
       {/* User image */}
       <TouchableOpacity
-        className="relative flex-row items-center justify-center w-full p-20 bg-grayBlue rounded-20 mb-50"
-        activeOpacity={editMode ? 0.2 : 1}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center', 
+            width: '100%',
+            padding: 20, 
+            backgroundColor: Colors.primary,
+            borderRadius: 20, 
+            marginBottom: 50,
+          }}
         onPress={editMode ? pickImage : () => {}}
       >
         <View className="w-[200px] h-[200px] rounded-full bg-grayLowContrast items-center justify-center overflow-hidden">
@@ -269,7 +278,7 @@ const UserTemplate = ({
             <View className="items-center justify-center rounded-full w-50 h-50 bg-grayLowContrast">
               <Text className="text-white font-bold text-[20px]">➕</Text>
             </View>
-            <Text>{userData.photo !== "" ? "Edit" : "Add"} photo</Text>
+            <Text style={{color: "#fff", paddingTop: 10}} >{userData.photo !== "" ? "Edit" : "Add"} photo</Text>
           </View>
         )}
       </TouchableOpacity>

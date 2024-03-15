@@ -13,6 +13,24 @@ import Colors from "./utils/Colors";
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
+
+const ChatList = () => {
+  return (
+    <Tab.Navigator>
+      <Tab.Screen
+        name="Chat"
+        component={ChatScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="chatbubble" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+};
+
+
 const SignedInScreens = () => {
   return (
     <Tab.Navigator>
