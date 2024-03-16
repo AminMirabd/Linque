@@ -8,27 +8,11 @@ import { Ionicons } from "@expo/vector-icons";
 import AdminNavigation from "./src/screens/navigation/AdminNavigation";
 import LoginProvider from "./context/LoginProvider";
 import ScheduleNavigation from "./src/screens/navigation/ScheduleNavigation";
+import ChatNavigation from "./src/screens/navigation/ChatNavigation";
 import Colors from "./utils/Colors";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
-
-
-const ChatList = () => {
-  return (
-    <Tab.Navigator>
-      <Tab.Screen
-        name="Chat"
-        component={ChatScreen}
-        options={{
-          tabBarIcon: ({ color, size }) => (
-            <Ionicons name="chatbubble" color={color} size={size} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-};
 
 
 const SignedInScreens = () => {
@@ -54,7 +38,7 @@ const SignedInScreens = () => {
       />
       <Tab.Screen
         name="Chat"
-        component={ChatScreen}
+        component={ChatNavigation}
         options={{
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble" color={color} size={size} />

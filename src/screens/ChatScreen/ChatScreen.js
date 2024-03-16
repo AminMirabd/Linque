@@ -1,207 +1,80 @@
-import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-import { TouchableOpacity, Image, View, Text } from 'react-native';
-import { GiftedChat, Bubble } from 'react-native-gifted-chat';
-import { collection, addDoc, orderBy, query, onSnapshot, doc, getDoc } from 'firebase/firestore';
-import { auth, database } from '../../../firebase';
-import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
-import Colors from "../../../utils/Colors";
+import { StyleSheet, Text, View } from 'react-native'
+import React, { useState, useCallback, useEffect } from 'react'
+import { GiftedChat } from 'react-native-gifted-chat'
+import { auth } from '../../../firebase'
+import { addDoc, collection, serverTimestamp , doc, onSnapshot, query, orderBy} from 'firebase/firestore';
+import { database } from '../../../firebase';
 
 export default function Chat({route}) {
-  //const uid = route.params.uid
-  const [messages, setMessages] = useState([]);
-  const navigation = useNavigation();
-  const currentUser = auth?.currentUser?.uid;
-
-  const fetchUserProfilePicture = async (userId) => {
-    try {
-      const userDoc = await getDoc(doc(database, "users", userId));
-      if (userDoc.exists()) {
-        const userData = userDoc.data();
-        if (userData.photo) {
-          return userData.photo;
-        } else {
-          return `https://ui-avatars.com/api/?name=${userData.name} ${userData.lastName}&background=random&color=fff`;
-        }
-      } else {
-        console.log("No such user!");
-        return '';
-      }
-    } catch (error) {
-      console.error("Error fetching user profile picture: ", error);
-      return '';
-    }
-  };
+  const uid = route.params.id
   
+  const [messages, setMessages] = useState([]);
+  const currentUser = auth?.currentUser?.uid;
+  console.log(currentUser)
+  useEffect(() => {
+    const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
+    const docref = doc(database, 'chatrooms', chatId);
+    const colRef = collection(docref, 'messages');
+    const q = query(colRef, orderBy('createdAt',"desc"));
+    const unsubcribe = onSnapshot(q, (onSnap) => {
+      const allMsg = onSnap.docs.map(mes => {
+        if(mes.data().createdAt){
+          return{
+            ...mes.data(),
+            createdAt:mes.data().createdAt.toDate()
+          }
+        }else{
+          return{
+            ...mes.data(),
+            createdAt:new Date()
+          }
+        }
+        
 
-  useLayoutEffect(() => {
+      })
+      setMessages(allMsg)
 
-    const collectionRef = collection(database, 'chats');
-    const q = query(collectionRef, orderBy('createdAt', 'desc'));
+    })
 
-    const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-      const messagesWithAvatars = await Promise.all(querySnapshot.docs.map(async (doc) => {
-        const messageData = doc.data();
-        const avatar = await fetchUserProfilePicture(messageData.user._id);
-        return {
-          _id: doc.id,
-          createdAt: messageData.createdAt.toDate(),
-          text: messageData.text,
-          user: {
-            ...messageData.user,
-            avatar, 
-          },
-        };
-      }));
-      setMessages(messagesWithAvatars);
-    });
-    return unsubscribe;
-  }, []);
+      return () => {
+        unsubcribe()
+      }
+  },[])
 
-  const onSend = useCallback(async (messages = []) => {
-    const { _id, createdAt, text, user } = messages[0];
-    const avatar = await fetchUserProfilePicture(user._id); // Fetch avatar for the sender
+  const onSend = useCallback((messagesArray) => {
+    const msg = messagesArray[0];
+    // console.log(myMsg)
+    const myMsg = {
+      ...msg,
+      sentBy:currentUser,
+      sentTo:uid
+//chatrooms/1233438485/messages/123/msg, createdat
+    }
+    setMessages(previousMessages => GiftedChat.append(previousMessages, myMsg))
+    const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
 
-    addDoc(collection(database, 'chats'), {
-      _id,
-      createdAt,
-      text,
-      user: {
-        ...user,
-        avatar, 
-      },
-    });
-    setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
-  }, []);
 
+    const docref = doc(database, 'chatrooms', chatId);
+    const colRef = collection(docref, 'messages');
+    const chatSnap = addDoc(colRef, {
+      ...myMsg,
+      createdAt:serverTimestamp(),
+    })
+
+  }, [])
   return (
     <GiftedChat
       messages={messages}
-      onSend={messages => onSend(messages)}
-      user={{
-        _id: currentUser, 
-      }}
-      showUserAvatar={true}
+      onSend={text => onSend(text)}
+      showUserAvatar={false}
       messagesContainerStyle={{
         backgroundColor: '#fff', 
       }}
-      renderBubble={(props) => {
-        const backgroundColor = props.currentMessage.user._id === currentUser? Colors.primary : '#gray';
-        return (
-          <Bubble
-            {...props}
-            wrapperStyle={{
-              right: { backgroundColor: backgroundColor },
-              left: {}, 
-            }}
-          />
-        );
+      user={{
+        _id: currentUser,
       }}
     />
-  );
+  )
 }
 
-
-
-// import React, { useState, useEffect, useLayoutEffect, useCallback } from 'react';
-// import { TouchableOpacity, Image, View, Text } from 'react-native';
-// import { GiftedChat, Bubble } from 'react-native-gifted-chat';
-// import { collection, addDoc, orderBy, query, onSnapshot, doc, getDoc } from 'firebase/firestore';
-// import { auth, database } from '../../../firebase';
-// import { useNavigation } from '@react-navigation/native';
-// import { AntDesign } from '@expo/vector-icons';
-// import Colors from "../../../utils/Colors";
-
-// export default function Chat({route}) {
-//   //const uid = route.params.uid
-//   const [messages, setMessages] = useState([]);
-//   const navigation = useNavigation();
-//   const currentUser = auth?.currentUser?.uid;
-
-//   const fetchUserProfilePicture = async (userId) => {
-//     try {
-//       const userDoc = await getDoc(doc(database, "users", userId));
-//       if (userDoc.exists()) {
-//         const userData = userDoc.data();
-//         if (userData.photo) {
-//           return userData.photo;
-//         } else {
-//           return `https://ui-avatars.com/api/?name=${userData.name} ${userData.lastName}&background=random&color=fff`;
-//         }
-//       } else {
-//         console.log("No such user!");
-//         return '';
-//       }
-//     } catch (error) {
-//       console.error("Error fetching user profile picture: ", error);
-//       return '';
-//     }
-//   };
-  
-
-//   useLayoutEffect(() => {
-
-//     const collectionRef = collection(database, 'chats');
-//     const q = query(collectionRef, orderBy('createdAt', 'desc'));
-
-//     const unsubscribe = onSnapshot(q, async (querySnapshot) => {
-//       const messagesWithAvatars = await Promise.all(querySnapshot.docs.map(async (doc) => {
-//         const messageData = doc.data();
-//         const avatar = await fetchUserProfilePicture(messageData.user._id);
-//         return {
-//           _id: doc.id,
-//           createdAt: messageData.createdAt.toDate(),
-//           text: messageData.text,
-//           user: {
-//             ...messageData.user,
-//             avatar, 
-//           },
-//         };
-//       }));
-//       setMessages(messagesWithAvatars);
-//     });
-//     return unsubscribe;
-//   }, []);
-
-//   const onSend = useCallback(async (messages = []) => {
-//     const { _id, createdAt, text, user } = messages[0];
-//     const avatar = await fetchUserProfilePicture(user._id); // Fetch avatar for the sender
-
-//     addDoc(collection(database, 'chats'), {
-//       _id,
-//       createdAt,
-//       text,
-//       user: {
-//         ...user,
-//         avatar, 
-//       },
-//     });
-//     setMessages(previousMessages => GiftedChat.append(previousMessages, messages));
-//   }, []);
-
-//   return (
-//     <GiftedChat
-//       messages={messages}
-//       onSend={messages => onSend(messages)}
-//       user={{
-//         _id: currentUser, 
-//       }}
-//       showUserAvatar={true}
-//       messagesContainerStyle={{
-//         backgroundColor: '#fff', 
-//       }}
-//       renderBubble={(props) => {
-//         const backgroundColor = props.currentMessage.user._id === currentUser? Colors.primary : '#gray';
-//         return (
-//           <Bubble
-//             {...props}
-//             wrapperStyle={{
-//               right: { backgroundColor: backgroundColor },
-//               left: {}, 
-//             }}
-//           />
-//         );
-//       }}
-//     />
-//   );
-// }
+const styles = StyleSheet.create({})
