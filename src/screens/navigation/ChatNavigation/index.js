@@ -17,11 +17,11 @@ const ChatNavigation = () => {
       }}
     >
       <Stack.Screen component={ListItem} name="ListItem"/>
-      <Stack.Screen
+      {/* <Stack.Screen
         component={ChatScreen}
         name="ChatScreen"
         initialParams={{ id: null }}
-      />
+      /> */}
     </Stack.Navigator>
   );
 };

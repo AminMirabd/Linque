@@ -10,6 +10,9 @@ import LoginProvider from "./context/LoginProvider";
 import ScheduleNavigation from "./src/screens/navigation/ScheduleNavigation";
 import ChatNavigation from "./src/screens/navigation/ChatNavigation";
 import Colors from "./utils/Colors";
+import Label from "./src/components/global/label";
+import { View, TouchableOpacity } from 'react-native';
+
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
@@ -17,11 +20,15 @@ const Stack = createNativeStackNavigator();
 
 const SignedInScreens = () => {
   return (
-    <Tab.Navigator>
+    <Tab.Navigator
+    
+    >
       <Tab.Screen
         name="Account"
         component={AccountScreen}
         options={{
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="person" color={color} size={size} />
           ),
@@ -31,6 +38,8 @@ const SignedInScreens = () => {
         name="Schedule"
         component={ScheduleNavigation}
         options={{
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="calendar" color={color} size={size} />
           ),
@@ -39,16 +48,31 @@ const SignedInScreens = () => {
       <Tab.Screen
         name="Chat"
         component={ChatNavigation}
-        options={{
+        options={({ navigation }) => ({
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubble" color={color} size={size} />
           ),
-        }}
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => {
+                console.log('Header Icon Pressed!');
+              }}
+              style={{ paddingRight: 20, paddingBottom: 5 }} 
+            >
+              <Ionicons name="add-circle-outline" size={30} color={Colors.primary} />
+            </TouchableOpacity>
+          ),
+          headerShown: true, 
+        })}
       />
       <Tab.Screen
         name="Admin"
         component={AdminNavigation}
         options={{
+          tabBarShowLabel: false,
+          tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="egg" color={color} size={size} />
           ),
@@ -73,6 +97,14 @@ export default function App() {
             name="SignedInScreens"
             component={SignedInScreens}
           />
+
+          <Stack.Screen
+            component={ChatScreen}
+            name="ChatScreen"
+            initialParams={{ id: null }}
+          />
+
+  
         </Stack.Navigator>
       </NavigationContainer>
     </LoginProvider>

@@ -1,16 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React, { useState, useCallback, useEffect } from 'react'
-import { GiftedChat } from 'react-native-gifted-chat'
+import { GiftedChat, Bubble } from 'react-native-gifted-chat'
 import { auth } from '../../../firebase'
 import { addDoc, collection, serverTimestamp , doc, onSnapshot, query, orderBy} from 'firebase/firestore';
 import { database } from '../../../firebase';
+import Colors from '../../../utils/Colors';
 
 export default function Chat({route}) {
   const uid = route.params.id
   
   const [messages, setMessages] = useState([]);
   const currentUser = auth?.currentUser?.uid;
-  console.log(currentUser)
   useEffect(() => {
     const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
     const docref = doc(database, 'chatrooms', chatId);
@@ -72,6 +72,18 @@ export default function Chat({route}) {
       }}
       user={{
         _id: currentUser,
+      }}
+      renderBubble={(props) => {
+        const backgroundColor = props.currentMessage.user._id === currentUser? Colors.primary : '#gray';
+        return (
+          <Bubble
+            {...props}
+            wrapperStyle={{
+              right: { backgroundColor: backgroundColor },
+              left: {}, 
+            }}
+          />
+        );
       }}
     />
   )

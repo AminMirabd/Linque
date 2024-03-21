@@ -5,6 +5,7 @@ import Input from "../../components/customElements/input";
 import { getAllUsersDB } from "../../../utils/firebaseOperations";
 import { auth, database } from '../../../firebase';
 import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import Chat from "./GroupChatScreen";
 
 const ListItem = (props) => {
   const { navigation } = props;
@@ -49,7 +50,10 @@ const ListItem = (props) => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         if (!querySnapshot.empty) {
           const data = querySnapshot.docs[0].data();
-          setLastMessage(data.text || "No messages yet");
+          setLastMessage(data.text);
+        }
+        else {
+          setLastMessage("No messages yet");
         }
       });
 
@@ -88,13 +92,14 @@ const ListItem = (props) => {
   };
 
   return (
-    <PageContainer title="" navigation={navigation} keyboardScroll={true}>
+    <PageContainer title="" keyboardScroll={true}>
       <Input
         placeholder="Filter by name or last name"
         value={searchValue}
         setValue={filterUsers}
         className="mb-4"
       />
+      <Chat/>
       <View className="flex-1">
         {filteredUsers.map((user) => (
           <RenderUser user={user} key={user.UID} />

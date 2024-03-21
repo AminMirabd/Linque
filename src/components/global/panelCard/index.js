@@ -1,5 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
+import Colors from "../../../../utils/Colors";
 
 const PanelCard = ({ icon, title, description, onPress }) => {
   return (
@@ -8,7 +9,7 @@ const PanelCard = ({ icon, title, description, onPress }) => {
       onPress={onPress}
     >
       {/* Section icon */}
-      <View className="items-center justify-center bg-blue-600 rounded-full w-80 h-80">
+      <View className="items-center justify-center rounded-full w-80 h-80" style={{ backgroundColor: Colors.primary }}>
         <Text className="text-[35px] leading-none">{icon}</Text>
       </View>
 
