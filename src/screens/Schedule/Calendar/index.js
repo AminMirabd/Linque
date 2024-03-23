@@ -100,7 +100,7 @@ const Calendar = (props) => {
         }}
         initialTimeIntervalHeight={20}
         minTimeIntervalHeight={20}
-        maxTimeIntervalHeight={70}
+        maxTimeIntervalHeight={100}
         allowPinchToZoom
         allowDragToCreate
       />

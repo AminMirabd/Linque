@@ -23,6 +23,10 @@ const ViewEvent = ({ route, navigation }) => {
     });
   };
 
+  useEffect(() => {
+    // console.log(eventData.date);
+  }, [eventData]);
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
 
@@ -39,14 +43,25 @@ const ViewEvent = ({ route, navigation }) => {
 
   return (
     <PageContainer navigation={navigation} title="View Event" keyboardScroll>
-      <Text>Title: {eventData.title}</Text>
-      <Text>Description: {eventData.description}</Text>
-      <Text>Color: {eventData.color}</Text>
-      <Text>Employees Assigned: {eventData.employeesAssigned}</Text>
-      <Text>
-        From: {formatDate(eventData.date.from.toDate().toISOString())}
-      </Text>
-      <Text>To: {formatDate(eventData.date.to.toDate().toISOString())}</Text>
+      {isLoading ? (
+        <>
+          <Text>Loading...</Text>
+        </>
+      ) : (
+        <>
+          <Text>Title: {eventData.title}</Text>
+          <Text>Description: {eventData.description}</Text>
+          <Text>Color: {eventData.color}</Text>
+          <Text>Employees Assigned: {eventData.employeesAssigned}</Text>
+          <Text>
+            {/* From: {formatDate(eventData.date.from.toDate().toISOString())} */}
+            {JSON.stringify(eventData.date)}
+          </Text>
+          <Text>
+            {/* To: {formatDate(eventData.date.to.toDate().toISOString())} */}
+          </Text>
+        </>
+      )}
     </PageContainer>
   );
 };
