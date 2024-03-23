@@ -1,14 +1,13 @@
 import { StyleSheet, Text, View } from 'react-native'
-import React, { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useLayoutEffect  } from 'react'
 import { GiftedChat, Bubble } from 'react-native-gifted-chat'
 import { auth } from '../../../firebase'
 import { addDoc, collection, serverTimestamp , doc, onSnapshot, query, orderBy} from 'firebase/firestore';
 import { database } from '../../../firebase';
 import Colors from '../../../utils/Colors';
 
-export default function Chat({route}) {
+export default function Chat({navigation, route}) {
   const uid = route.params.id
-  
   const [messages, setMessages] = useState([]);
   const currentUser = auth?.currentUser?.uid;
   useEffect(() => {

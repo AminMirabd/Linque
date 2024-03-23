@@ -6,6 +6,9 @@ import { getAllUsersDB } from "../../../utils/firebaseOperations";
 import { auth, database } from '../../../firebase';
 import { doc, collection, query, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import Chat from "./GroupChatScreen";
+import { Ionicons } from "@expo/vector-icons";
+//import { Colors } from "react-native/Libraries/NewAppScreen";
+import Colors from "../../../utils/Colors";
 
 const ListItem = (props) => {
   const { navigation } = props;
@@ -31,7 +34,8 @@ const ListItem = (props) => {
       });
       setFilteredUsers(newDataUsers);
       setSearchValue(text);
-    } else {
+    } 
+    else {
       setFilteredUsers(users);
       setSearchValue("");
     }
@@ -63,26 +67,38 @@ const ListItem = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate('ChatScreen', {name:user.name, id: user.UID});
+          navigation.navigate('ChatScreen', {name:user.name, id: user.UID, photo: user.photo});
         }}
         className="w-full p-20 rounded-20 border-[1px] border-grayLowContrast flex-row items-center justify-start mb-10"
       >
         <View
-          className={`items-center justify-center mr-10 overflow-hidden rounded-full w-50 h-50 ${user.photo === "" ? "bg-blue-400" : ""}`}
+          className={`items-center justify-center mr-10 overflow-hidden rounded-full w-50 h-50 ${user.photo === "" && user.UID !== auth.currentUser.uid ? "bg-blue-400" : user.UID === auth.currentUser.uid ? "bg-blue-400" : ""}`}
         >
-          {user.photo !== "" ? (
+        {
+          user.photo !== "" && user.UID !== auth.currentUser.uid ? (
             <Image
               className="object-cover w-full h-full"
               source={{ uri: user.photo }}
             />
+          ) : user.UID === auth.currentUser.uid ? (
+            <Ionicons size={30} color={Colors.primary} name="bookmark-outline" />
           ) : (
             <Text className="text-[20px] leading-none">🦸🏻</Text>
-          )}
+          )
+        }
         </View>
         <View className="flex-1">
-          <Text style={{ fontSize: 15, fontWeight: 'bold', color: 'black', marginBottom: 4 }}>
-            {user.name} {user.lastName}
-          </Text>
+        {
+          user.UID == auth.currentUser.uid ? (
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: 'black', marginBottom: 4 }}>
+              Saved Messages
+            </Text>
+          ) : (
+            <Text style={{ fontSize: 15, fontWeight: 'bold', color: 'black', marginBottom: 4 }}>
+              {user.name} {user.lastName}
+            </Text>
+          )
+        }
           <Text style={{ fontWeight: '500', color: 'gray', fontSize: 14, marginBottom: 15}}>
             {lastMessage}
           </Text>
