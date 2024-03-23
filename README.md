@@ -28,4 +28,20 @@ The application is primarily intended for:
 3. **Document Uploads**: Users can upload, view, and download necessary documents directly through the app, streamlining the documentation process.
 4. **In-App Messaging**: The app includes a messaging feature, allowing for instant communication between ambassadors and coordinators to address any concerns or changes.
 
+## License
+
+This project is licensed under the Apache License, Version 2.0 (the "License"); you may not use this project except in compliance with the License. A copy of the License is available at:
+
+http://www.apache.org/licenses/LICENSE-2.0
+
+### Why Apache License 2.0?
+
+The Apache License 2.0 was chosen for this project for several reasons:
+
+- **Permissiveness**: It allows for almost unrestricted freedom to use, modify, and distribute the code, making it highly flexible for both private and commercial use.
+- **Protection**: Offers an explicit grant of patent rights from contributors to users, protecting against patent litigation risks.
+- **Contribution Tracking**: Requires changes to be stated, promoting transparency and acknowledgment of contributions within the community.
+
+This license ensures that the project remains open and accessible while providing necessary legal protections for both the creators and users.
+
 
