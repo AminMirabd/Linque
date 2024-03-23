@@ -1,8 +1,9 @@
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { Easing } from "react-native-reanimated";
 import ColorPicker, { Swatches } from "reanimated-color-picker";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import { MotiView, MotiText } from "moti";
 import PageContainer from "../../../../components/global/pageContainer";
 import Input from "../../../../components/customElements/input";
@@ -17,12 +18,23 @@ let randomstring = require("randomstring");
 
 const AddEvent = (props) => {
   const { navigation } = props;
+  const [date, setDate] = useState(new Date());
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
+  const [startingDate, setStartingDate] = useState(null);
+  const [endingDate, setEndingDate] = useState(null);
+
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("");
   const [employees, setEmployees] = useState([]);
   const [listEmployeesAssigned, setListEmployeesAssigneed] = useState([]);
+
+  //Fetch all users from the database
+  useEffect(() => {
+    getAllUsersDB(setEmployees);
+  }, []);
 
   const generateRandomDate = () => {
     const year = 2024;
@@ -35,6 +47,40 @@ const AddEvent = (props) => {
 
     // Create a new Date object with the generated values
     return new Date(year, month, day, hours, minutes, seconds, milliseconds);
+  };
+
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setDate(currentDate);
+  };
+
+  const onChangeStartTime = (event, selectedTime) => {
+    const currentTime = selectedTime || startTime;
+    setStartTime(currentTime);
+  };
+
+  const onChangeEndTime = (event, selectedTime) => {
+    const currentTime = selectedTime || endTime;
+    setEndTime(currentTime);
+  };
+
+  const combineDateAndTime = (date, time) => {
+    let combined = new Date(date);
+    combined.setHours(time.getHours());
+    combined.setMinutes(time.getMinutes());
+    combined.setSeconds(time.getSeconds());
+    combined.setMilliseconds(time.getMilliseconds());
+    return combined;
+  };
+
+  const getISODateTime = () => {
+    const startDateTime = combineDateAndTime(date, startTime);
+    const endDateTime = combineDateAndTime(date, endTime);
+
+    const isoStartDateTime = startDateTime.toISOString();
+    const isoEndDateTime = endDateTime.toISOString();
+
+    return { isoStartDateTime, isoEndDateTime };
   };
 
   const onSelectColor = ({ hex }) => {
@@ -61,10 +107,36 @@ const AddEvent = (props) => {
     setListEmployeesAssigneed(auxList);
   };
 
-  //Fetch all users from the database
-  useEffect(() => {
-    getAllUsersDB(setEmployees);
-  }, []);
+  const handleCreateEvent = () => {
+    setLoading(true);
+    const date = getISODateTime();
+    const fromDate = date.isoStartDateTime;
+    const toDate = date.isoEndDateTime;
+
+    const eventObj = {
+      id: randomstring.generate(10),
+      title: title,
+      description: description,
+      color: color,
+      employeesAssigned: listEmployeesAssigned,
+      date: {
+        from: fromDate,
+        to: toDate,
+      },
+    };
+
+    addEventDB(eventObj).then(() => {
+      setLoading(false);
+      Dialog.show({
+        type: ALERT_TYPE.SUCCESS,
+        title: `${title} event added`,
+        textBody: "The event has been created successfully.",
+        button: "Close",
+        autoClose: 400,
+        onHide: () => navigation.navigate("Calendar"),
+      });
+    });
+  };
 
   const itemSeparator = () => {
     return <View className="h-[1px] bg-grayLowContrast w-full" />;
@@ -133,37 +205,6 @@ const AddEvent = (props) => {
     );
   };
 
-  const handleCreateEvent = () => {
-    setLoading(true);
-
-    const fromDate = generateRandomDate();
-    const toDate = new Date(fromDate.getTime() + 60 * 60 * 1000);
-
-    const eventObj = {
-      id: randomstring.generate(10),
-      title: title,
-      description: description,
-      color: color,
-      employeesAssigned: listEmployeesAssigned,
-      date: {
-        from: fromDate,
-        to: toDate,
-      },
-    };
-
-    addEventDB(eventObj).then(() => {
-      setLoading(false);
-      Dialog.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: `${title} event added`,
-        textBody: "The event has been created successfully.",
-        button: "Close",
-        autoClose: 400,
-        onHide: () => navigation.navigate("Calendar"),
-      });
-    });
-  };
-
   return (
     <PageContainer
       title="Add Event"
@@ -183,6 +224,45 @@ const AddEvent = (props) => {
         value={description}
         setValue={setDescription}
       />
+
+      {/* Date */}
+      <View className="flex items-start justify-start w-fill">
+        <Label>Date:</Label>
+        <DateTimePicker
+          value={date}
+          mode="date"
+          display="spinner"
+          onChange={onChangeDate}
+        />
+      </View>
+
+      {/* Time range */}
+      <View className="flex items-start justify-start w-fill">
+        <Label>Time range:</Label>
+        <View className="flex flex-row mt-5">
+          {/* Start time */}
+          <View className="flex flex-row items-center justify-center">
+            <Text className="pl-5 text-grayHighContranst">From:</Text>
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              display="default"
+              onChange={onChangeStartTime}
+            />
+          </View>
+
+          {/* End time */}
+          <View className="flex flex-row items-center justify-center">
+            <Text className="ml-10 text-grayHighContranst">To:</Text>
+            <DateTimePicker
+              value={endTime}
+              mode="time"
+              display="default"
+              onChange={onChangeEndTime}
+            />
+          </View>
+        </View>
+      </View>
 
       {/* Color Picker */}
       <View className="flex flex-col mb-15">
@@ -218,7 +298,7 @@ const AddEvent = (props) => {
             data={employees}
             renderItem={renderItemUser}
             ItemSeparatorComponent={itemSeparator}
-            keyExtractor={(item, index) => {
+            keyExtractor={(item) => {
               item.UID;
             }}
           />

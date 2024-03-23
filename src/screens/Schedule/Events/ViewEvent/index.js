@@ -49,13 +49,13 @@ const ViewEvent = ({ route, navigation }) => {
       <Text>Employees Assigned: {eventData.employeesAssigned}</Text>
       <Text>
         From:{" "}
-        {formatDate(
-          eventData.date && eventData.date.from.toDate().toISOString()
-        )}
+        {/* {formatDate(
+          // eventData.date && eventData.date.from.toDate().toISOString()
+        )} */}
       </Text>
       <Text>
         To:{" "}
-        {formatDate(eventData.date && eventData.date.to.toDate().toISOString())}
+        {/* {formatDate(eventData.date && eventData.date.to.toDate().toISOString())} */}
       </Text>
     </PageContainer>
   );

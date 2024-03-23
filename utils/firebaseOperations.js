@@ -99,8 +99,8 @@ export const getEventsDB = async (from, to) => {
     const querySnapshot = await getDocs(eventsRef);
     querySnapshot.forEach((doc) => {
       const eventData = doc.data();
-      const eventFrom = eventData.date.from.toDate().toISOString(); // Convert Timestamp to ISO string
-      const eventTo = eventData.date.to.toDate().toISOString(); // Convert Timestamp to ISO string
+      const eventFrom = eventData.date.from; // Convert Timestamp to ISO string
+      const eventTo = eventData.date.to; // Convert Timestamp to ISO string
 
       if (eventFrom <= to && eventTo >= from) {
         const formattedEventData = {

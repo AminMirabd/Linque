@@ -1,12 +1,15 @@
-import { StyleSheet, Text, View } from "react-native";
 import React, { useState, useCallback, useEffect } from "react";
-import { GiftedChat, Bubble } from "react-native-gifted-chat";
+import { Keyboard, StyleSheet, Text, View } from "react-native";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { GiftedChat, Bubble, Send } from "react-native-gifted-chat";
 import { auth } from "../../../firebase";
 import Colors from "../../../utils/Colors";
 import { addMessageDB, getMessagesDB } from "../../../utils/firebaseOperations";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function Chat({ route }) {
   const uid = route.params.id;
+  const insets = useSafeAreaInsets();
 
   const [messages, setMessages] = useState([]);
   const currentUser = auth?.currentUser?.uid;
@@ -46,14 +49,17 @@ export default function Chat({ route }) {
     <GiftedChat
       messages={messages}
       onSend={(text) => onSend(text)}
-      showUserAvatar={false}
+      renderAvatar={null}
+      bottomOffset={insets.bottom}
       showAvatarForEveryMessage={false}
       messagesContainerStyle={{
         backgroundColor: Colors.white,
+        paddingBottom: 40,
       }}
       user={{
         _id: currentUser,
       }}
+      minInputToolbarHeight={Keyboard.isVisible ? 0 : 40}
       renderBubble={(props) => {
         const backgroundColor =
           props.currentMessage.user._id === currentUser
@@ -75,6 +81,25 @@ export default function Chat({ route }) {
           />
         );
       }}
+      renderSend={(props) => {
+        return (
+          <Send
+            {...props}
+            containerStyle={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="send-circle"
+              size={40}
+              color={"#06BCEE"}
+            />
+          </Send>
+        );
+      }}
+      alwaysShowSend
     />
   );
 }
