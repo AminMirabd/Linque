@@ -1,108 +1,92 @@
-import React, {
-  useState,
-  useEffect,
-  useLayoutEffect,
-  useCallback
-} from 'react';
-import { TouchableOpacity, Text } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
-import {
-  collection,
-  addDoc,
-  orderBy,
-  query,
-  onSnapshot
-} from 'firebase/firestore';
-import { signOut } from 'firebase/auth';
-import { auth, database } from '../../../firebase';
-import { useNavigation } from '@react-navigation/native';
-import { AntDesign } from '@expo/vector-icons';
-import { User } from '../../models/User';
+import { StyleSheet, Text, View } from 'react-native'
+import React, { useState, useCallback, useEffect } from 'react'
+import { GiftedChat, Bubble } from 'react-native-gifted-chat'
+import { auth } from '../../../firebase'
+import { addDoc, collection, serverTimestamp , doc, onSnapshot, query, orderBy} from 'firebase/firestore';
+import { database } from '../../../firebase';
+import Colors from '../../../utils/Colors';
 
-
-export default function Chat() {
-
+export default function Chat({route}) {
+  const uid = route.params.id
+  
   const [messages, setMessages] = useState([]);
-  const navigation = useNavigation();
+  const currentUser = auth?.currentUser?.uid;
+  useEffect(() => {
+    const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
+    const docref = doc(database, 'chatrooms', chatId);
+    const colRef = collection(docref, 'messages');
+    const q = query(colRef, orderBy('createdAt',"desc"));
+    const unsubcribe = onSnapshot(q, (onSnap) => {
+      const allMsg = onSnap.docs.map(mes => {
+        if(mes.data().createdAt){
+          return{
+            ...mes.data(),
+            createdAt:mes.data().createdAt.toDate()
+          }
+        }else{
+          return{
+            ...mes.data(),
+            createdAt:new Date()
+          }
+        }
+        
 
-// const onSignOut = () => {
-//     signOut(auth).catch(error => console.log('Error logging out: ', error));
-//   };
+      })
+      setMessages(allMsg)
 
-//   useLayoutEffect(() => {
-//       navigation.setOptions({
-//         headerRight: () => (
-//           <TouchableOpacity
-//             style={{
-//               marginRight: 10
-//             }}
-//             onPress={onSignOut}
-//           >
-//             <AntDesign name="logout" size={24} color='green' style={{marginRight: 10}}/>
-//           </TouchableOpacity>
-//         )
-//       });
-//     }, [navigation]);
+    })
 
-  useLayoutEffect(() => {
+      return () => {
+        unsubcribe()
+      }
+  },[])
 
-      const collectionRef = collection(database, 'chats');
-      const q = query(collectionRef, orderBy('createdAt', 'desc'));
+  const onSend = useCallback((messagesArray) => {
+    const msg = messagesArray[0];
+    // console.log(myMsg)
+    const myMsg = {
+      ...msg,
+      sentBy:currentUser,
+      sentTo:uid
+//chatrooms/1233438485/messages/123/msg, createdat
+    }
+    setMessages(previousMessages => GiftedChat.append(previousMessages, myMsg))
+    const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
 
-  const unsubscribe = onSnapshot(q, querySnapshot => {
-      console.log('querySnapshot unsusbscribe');
-        setMessages(
-          querySnapshot.docs.map(doc => ({
-            _id: doc.id,
-            createdAt: doc.data().createdAt.toDate(),
-            text: doc.data().text,
-            user: doc.data().user
-          }))
+
+    const docref = doc(database, 'chatrooms', chatId);
+    const colRef = collection(docref, 'messages');
+    const chatSnap = addDoc(colRef, {
+      ...myMsg,
+      createdAt:serverTimestamp(),
+    })
+
+  }, [])
+  return (
+    <GiftedChat
+      messages={messages}
+      onSend={text => onSend(text)}
+      showUserAvatar={false}
+      messagesContainerStyle={{
+        backgroundColor: '#fff', 
+      }}
+      user={{
+        _id: currentUser,
+      }}
+      renderBubble={(props) => {
+        const backgroundColor = props.currentMessage.user._id === currentUser? Colors.primary : '#gray';
+        return (
+          <Bubble
+            {...props}
+            wrapperStyle={{
+              right: { backgroundColor: backgroundColor },
+              left: {}, 
+            }}
+          />
         );
-      });
-  return unsubscribe;
-    }, []);
-
-  const onSend = useCallback((messages = []) => {
-      setMessages(previousMessages =>
-        GiftedChat.append(previousMessages, messages)
-      );
-       setMessages([...messages]);//
-      const { _id, createdAt, text, user } = messages[0];    
-      addDoc(collection(database, 'chats'), {
-        _id,
-        createdAt,
-        text,
-        user
-      });
-    }, []);
-
-    return (
-      // <>
-      //   {messages.map(message => (
-      //     <Text key={message._id}>{message.text}</Text>
-      //   ))}
-      // </>
-      <GiftedChat
-        messages={messages}
-        showAvatarForEveryMessage={false}
-        showUserAvatar={false}
-        onSend={messages => onSend(messages)}
-        messagesContainerStyle={{
-          backgroundColor: '#fff',
-        }}
-        textInputStyle={{
-          backgroundColor: '#fff',
-          borderRadius: 20,
-        }}
-        user={{
-          _id: auth?.currentUser?.email,
-          name: 'a',
-          avatar: 'https://i.pravatar.cc/300',
-          position: "",
-          DOB: Date.now(),
-          gender: "",
-        }}
-      />
-    );
+      }}
+    />
+  )
 }
+
+const styles = StyleSheet.create({})
