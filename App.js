@@ -10,19 +10,14 @@ import LoginProvider from "./context/LoginProvider";
 import ScheduleNavigation from "./src/screens/navigation/ScheduleNavigation";
 import ChatNavigation from "./src/screens/navigation/ChatNavigation";
 import Colors from "./utils/Colors";
-import Label from "./src/components/global/label";
-import { View, TouchableOpacity } from 'react-native';
-
+import { View, TouchableOpacity } from "react-native";
 
 const Tab = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
 
-
 const SignedInScreens = () => {
   return (
-    <Tab.Navigator
-    
-    >
+    <Tab.Navigator>
       <Tab.Screen
         name="Account"
         component={AccountScreen}
@@ -57,14 +52,18 @@ const SignedInScreens = () => {
           headerRight: () => (
             <TouchableOpacity
               onPress={() => {
-                console.log('Header Icon Pressed!');
+                console.log("Header Icon Pressed!");
               }}
-              style={{ paddingRight: 20, paddingBottom: 5 }} 
+              style={{ paddingRight: 20, paddingBottom: 5 }}
             >
-              <Ionicons name="add-circle-outline" size={30} color={Colors.primary} />
+              <Ionicons
+                name="add-circle-outline"
+                size={30}
+                color={Colors.primary}
+              />
             </TouchableOpacity>
           ),
-          headerShown: true, 
+          headerShown: true,
         })}
       />
       <Tab.Screen
@@ -97,14 +96,6 @@ export default function App() {
             name="SignedInScreens"
             component={SignedInScreens}
           />
-
-          <Stack.Screen
-            component={ChatScreen}
-            name="ChatScreen"
-            initialParams={{ id: null }}
-          />
-
-  
         </Stack.Navigator>
       </NavigationContainer>
     </LoginProvider>

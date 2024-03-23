@@ -12,6 +12,10 @@ import {
   arrayRemove,
   deleteDoc,
   getDocs,
+  serverTimestamp,
+  addDoc,
+  orderBy,
+  limit,
 } from "firebase/firestore";
 import { getStorage, ref, deleteObject, uploadBytes } from "firebase/storage";
 
@@ -35,7 +39,6 @@ export const addUserDB = async (user) => {
     alert(`Error creating user fb ${error} `);
   }
 };
-
 export const addEventDB = async (event) => {
   const eventsRef = collection(database, "events");
   try {
@@ -48,6 +51,19 @@ export const addEventDB = async (event) => {
     }
   } catch (error) {
     alert(`Error creating event in firebase ${error} `);
+  }
+};
+export const addMessageDB = async (chatId, message) => {
+  try {
+    const messageDocRef = doc(database, "chatrooms", chatId);
+    const messageCollectionRef = collection(messageDocRef, "messages");
+
+    await addDoc(messageCollectionRef, {
+      ...message, // Spread the message object to avoid nested structure
+      createdAt: serverTimestamp(),
+    });
+  } catch (error) {
+    console.error("Error adding message: ", error);
   }
 };
 
@@ -113,6 +129,41 @@ export const getEventInfoDB = async (id, setEventData) => {
   } catch (e) {
     console.error("Error getting event", e);
   }
+};
+export const getLastMessagaDB = async (chatId, setLastMessage) => {
+  const messagesRef = collection(database, "chatrooms", chatId, "messages");
+  const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
+  onSnapshot(q, (querySnapshot) => {
+    if (!querySnapshot.empty) {
+      const data = querySnapshot.docs[0].data();
+      setLastMessage(data.text);
+    } else {
+      setLastMessage("No messages yet");
+    }
+  });
+};
+export const getMessagesDB = (chatId, setMessages) => {
+  const messagesRef = collection(database, "chatrooms", chatId, "messages");
+
+  const q = query(messagesRef, orderBy("createdAt", "desc"));
+
+  onSnapshot(q, (onSnap) => {
+    const allMsg = onSnap.docs.map((mes) => {
+      if (mes.data().createdAt) {
+        return {
+          ...mes.data(),
+          createdAt: mes.data().createdAt.toDate(),
+        };
+      } else {
+        return {
+          ...mes.data(),
+          createdAt: new Date(),
+        };
+      }
+    });
+
+    setMessages(allMsg);
+  });
 };
 
 //Update functions
