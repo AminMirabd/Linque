@@ -20,7 +20,7 @@ const ChatNavigation = () => {
       }}
     >
       <Stack.Screen component={ListItem} name="ListItem" options={{title:"Chats", headerBackVisible: false,}}/>
-      <Stack.Screen
+      {/* <Stack.Screen
         component={ChatScreen}
         name="ChatScreen"
         initialParams={{ id: null }}
@@ -44,7 +44,7 @@ const ChatNavigation = () => {
             </TouchableOpacity>
           ),
         })}
-      />
+      /> */}
     </Stack.Navigator>
   );
 };

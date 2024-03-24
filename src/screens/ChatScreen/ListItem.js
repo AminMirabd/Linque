@@ -69,7 +69,7 @@ const ListItem = (props) => {
         onPress={() => {
           navigation.navigate('ChatScreen', {lastName: user.lastName, name:user.name, id: user.UID, photo: user.photo});
         }}
-        className="w-full p-20 rounded-20 border-[1px] border-grayLowContrast flex-row items-center justify-start mb-10"
+        className="w-full p-20 rounded-0 border-b-[1px] border-grayLowContrast flex-row items-center justify-start mb-0"
       >
         <View
           className={`items-center justify-center mr-10 overflow-hidden rounded-full w-50 h-50 ${user.photo === "" && user.UID !== auth.currentUser.uid ? "bg-blue-400" : user.UID === auth.currentUser.uid ? "bg-blue-400" : ""}`}
@@ -83,7 +83,10 @@ const ListItem = (props) => {
           ) : user.UID === auth.currentUser.uid ? (
             <Ionicons size={30} color={Colors.primary} name="bookmark-outline" />
           ) : (
-            <Text className="text-[20px] leading-none">🦸🏻</Text>
+            <Image
+            className="object-cover w-full h-full"
+            source={{ uri: `https://ui-avatars.com/api/?name=${user.name} ${user.lastName}&background=random&color=fff` }}
+          />
           )
         }
         </View>
