@@ -67,7 +67,7 @@ const ListItem = (props) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          navigation.navigate('ChatScreen', {name:user.name, id: user.UID, photo: user.photo});
+          navigation.navigate('ChatScreen', {lastName: user.lastName, name:user.name, id: user.UID, photo: user.photo});
         }}
         className="w-full p-20 rounded-20 border-[1px] border-grayLowContrast flex-row items-center justify-start mb-10"
       >

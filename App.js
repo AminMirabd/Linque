@@ -28,6 +28,7 @@ const SignedInScreens = () => {
         name="Account"
         component={AccountScreen}
         options={{
+          headerShown:true,
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
@@ -39,6 +40,7 @@ const SignedInScreens = () => {
         name="Schedule"
         component={ScheduleNavigation}
         options={{
+          headerShown:false,
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
@@ -50,6 +52,7 @@ const SignedInScreens = () => {
         name="Chat"
         component={ChatNavigation}
         options={({ navigation }) => ({
+          headerShown:false,
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
@@ -64,14 +67,14 @@ const SignedInScreens = () => {
             >
               <Ionicons name="add-circle-outline" size={30} color={Colors.primary} />
             </TouchableOpacity>
-          ),
-          headerShown: true, 
+          ), 
         })}
       />
       <Tab.Screen
         name="Admin"
         component={AdminNavigation}
         options={{
+          headerShown:false,
           tabBarShowLabel: false,
           tabBarActiveTintColor: Colors.primary,
           tabBarIcon: ({ color, size }) => (
@@ -127,7 +130,6 @@ export default function App() {
     </LoginProvider>
   );
 }
-// Add some styles for your headerTitle and profile image
 const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
@@ -138,9 +140,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   profileImage: {
-    width: 40, // Adjust the size as needed
+    width: 40,
     height: 40,
-    borderRadius: 100, // Makes it circular
+    borderRadius: 100, 
     marginRight: 8,
     marginTop: 50,
     marginLeft: 70,
@@ -149,6 +151,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 55,
     fontWeight: 'bold',
-    // Add more styling as needed
   },
 });
