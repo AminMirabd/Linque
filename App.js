@@ -14,6 +14,7 @@ import Label from "./src/components/global/label";
 import { View, TouchableOpacity, Text, Image, StyleSheet, Platform } from 'react-native';
 import ListItem from "./src/screens/ChatScreen/ListItem";
 import { auth } from "./firebase";
+import GroupChat from "./src/screens/ChatScreen/GroupChatScreen";
 
 
 
@@ -93,7 +94,7 @@ export default function App() {
             name="SignedInScreens"
             component={SignedInScreens}
           />
-<Stack.Screen
+      <Stack.Screen
         component={ChatScreen}
         name="ChatScreen"
         initialParams={{ id: null }}
@@ -112,7 +113,6 @@ export default function App() {
                 className="items-center justify-center mr-10 overflow-hidden rounded-full w-50 h-50 bg-blue-400"
                   style={styles.profileImage}
                 >
-                  {console.log(route.params?.UID, auth.currentUser.uid)}
                   <Ionicons size={25} color={Colors.primary} name="bookmark-outline" />
                 </View>
               ) : route.params?.photo ? (
@@ -120,7 +120,7 @@ export default function App() {
                   source={{ uri: route.params.photo }}
                   style={styles.profileImage}
                   
-                >{console.log(route.params?.UID, auth.currentUser.uid)}</Image>
+                ></Image>
               ) : (
                 <Image
                   style={styles.profileImage}
@@ -140,6 +140,17 @@ export default function App() {
           
         })}
       />
+      <Stack.Screen
+        component={GroupChat} name="GroupChat"
+        options={({ navigation }) => ({
+          title:"Group Chat",
+          headerBackVisible: false,
+          headerLeft: () => (
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.headerLeft}>
+              <Ionicons name="arrow-back" color={Colors.primary} size={30} />
+            </TouchableOpacity>
+          ),
+        })}/>
         </Stack.Navigator>
       </NavigationContainer>
     </LoginProvider>

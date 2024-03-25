@@ -7,6 +7,7 @@ import ChatScreen from "../../ChatScreen";
 import ListItem from "../../ChatScreen/ListItem";
 import { Ionicons } from "@expo/vector-icons";
 import Colors from "../../../../utils/Colors";
+import GroupChat from "../../ChatScreen/GroupChatScreen";
 
 const Stack = createNativeStackNavigator();
 

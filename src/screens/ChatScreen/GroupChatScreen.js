@@ -7,7 +7,7 @@ import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import Colors from "../../../utils/Colors";
 
-export default function Chat() {
+export default function GroupChat() {
   //const uid = route.params.uid
   const [messages, setMessages] = useState([]);
   const navigation = useNavigation();
