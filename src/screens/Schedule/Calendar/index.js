@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import PageContainer from "../../../components/global/pageContainer";
 import DynamicOptions from "../../../components/global/dynamicOptions";
-import { getEvents, getEventsDB } from "../../../../utils/firebaseOperations";
+import { getEventsDB } from "../../../../utils/firebaseOperations";
 import Colors from "../../../../utils/Colors";
 import CalendarItem from "../CalendarItem";
 
@@ -100,7 +100,7 @@ const Calendar = (props) => {
         }}
         initialTimeIntervalHeight={20}
         minTimeIntervalHeight={20}
-        maxTimeIntervalHeight={70}
+        maxTimeIntervalHeight={100}
         allowPinchToZoom
         allowDragToCreate
       />

@@ -91,6 +91,12 @@ const ListItem = (props) => {
       const unsubscribe = onSnapshot(q, (querySnapshot) => {
         if (!querySnapshot.empty) {
           const data = querySnapshot.docs[0].data();
+          let multiLine = data.text.split('\n');
+          if(data.text.length > 20){
+            data.text = data.text.slice(0, 19) + "...";
+          }if( multiLine.length > 1){
+            data.text = multiLine[0];
+          }
           setLastMessage(data.text);
         }
         else {

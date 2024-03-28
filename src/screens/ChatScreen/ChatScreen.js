@@ -1,59 +1,64 @@
-import { StyleSheet, Text, View } from 'react-native'
+import { Keyboard, StyleSheet, Text, View, Platform } from 'react-native'
 import React, { useState, useCallback, useEffect, useLayoutEffect  } from 'react'
-import { GiftedChat, Bubble } from 'react-native-gifted-chat'
+import { GiftedChat, Bubble, Send } from 'react-native-gifted-chat'
 import { auth } from '../../../firebase'
 import { addDoc, collection, serverTimestamp , doc, onSnapshot, query, orderBy, updateDoc} from 'firebase/firestore';
 import { database } from '../../../firebase';
 import Colors from '../../../utils/Colors';
 import { Ionicons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useIsFocused, useFocusEffect } from '@react-navigation/native';
+
 
 export default function Chat({navigation, route}) {
+  const isFocused = useIsFocused();
+  const insets = useSafeAreaInsets();
   const uid = route.params.id
   const [messages, setMessages] = useState([]);
   const currentUser = auth?.currentUser?.uid;
-  const markMessagesAsSeen = async (messageDocs) => {
-    const currentTime = new Date();
-    messageDocs.forEach((doc) => {
-      const messageData = doc.data();
-      if (messageData.createdAt?.toDate() < currentTime && !messageData.seen && messageData.sentTo === currentUser) {
-        // Update the message 'seen' status in Firestore
-        const messageRef = doc.ref;
-        updateDoc(messageRef, { seen: true }).catch((error) => console.error("Error updating message seen status:", error));
-      }
-    });
-  };
-  
-  
-  useEffect(() => {
-    const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
-    const docref = doc(database, 'chatrooms', chatId);
-    const colRef = collection(docref, 'messages');
-    const q = query(colRef, orderBy('createdAt',"desc"));
-    const unsubcribe = onSnapshot(q, (onSnap) => {
-      const allMsg = onSnap.docs.map(mes => {
-        console.log(mes.data().createdAt)
-        if(mes.data().createdAt != null){
-          return{
-            ...mes.data(),
-            createdAt:mes.data().createdAt.toDate()
-          }
-        }
-        else{
-          return{
-            ...mes.data(),
-            createdAt:new Date()
-          }
-        }
-      })
-      markMessagesAsSeen(onSnap.docs); 
-      setMessages(allMsg);
 
-    })
+
+  useFocusEffect(
+    useCallback(() => {
+      const chatId = uid > currentUser ? `${uid + '-' + currentUser}` : `${currentUser + '-' + uid}`;
+      const docRef = doc(database, 'chatrooms', chatId);
+      const colRef = collection(docRef, 'messages');
+      const q = query(colRef, orderBy('createdAt', "desc"));
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        const incomingMessages = snapshot.docs.map(docSnapshot => {
+          const messageData = docSnapshot.data();
+          const createdAtDate = messageData.createdAt?.toDate ? messageData.createdAt.toDate() : new Date();
+          
+          return {
+            _id: docSnapshot.id,
+            ...messageData,
+            createdAt: createdAtDate,
+          };
+        });
+
+        snapshot.docs.forEach(docSnapshot => {
+          const messageData = docSnapshot.data();
+          if (!messageData.seen && messageData.sentTo === currentUser) {
+            const messageRef = docSnapshot.ref;
+            updateDoc(messageRef, { seen: true }).catch(console.error);
+          }
+        });
+        setMessages(incomingMessages);
+        if(Platform.OS == "android"){
+          setMessages(incomingMessages);
+        }
+        
+      });
+
+
+      return () => unsubscribe();
+
+    }, [uid, currentUser])
+  );
+
   
-    return () => {
-      unsubcribe()
-    }
-  }, [])
   
   
 
@@ -79,25 +84,24 @@ export default function Chat({navigation, route}) {
     })
   }, [])
   const renderTicks = (message) => {
-    if (message.user._id === auth.currentUser.uid) { // Check if the message was sent by the current user
+    if (message.user._id === auth.currentUser.uid) {
       if (message.seen) {
-        // Render a double checkmark if the message has been seen
         return <View className="mr-5"><Ionicons name="checkmark-done-sharp" size={14} color={"#fff"} /></View>
       } else {
-        // Optionally, render a single checkmark or another icon to indicate the message was sent but not yet seen
         return <View className="mr-5"><Ionicons name="checkmark-sharp" size={14} color={"#fff"} /></View>
       }
     }
     return null;
   };
 
-  // Custom renderBubble function to incorporate custom rendering of ticks
+
   const renderBubble = (props) => (
     <Bubble
       {...props}
-      renderTicks={renderTicks} // Pass the custom renderTicks function
+      renderTicks={renderTicks} 
       wrapperStyle={{
-        right: { backgroundColor: Colors.primary },
+        right: { backgroundColor: Colors.primary, marginRight: 5 },
+        left: {paddingLeft: 5, marginLeft: 12}
       }}
     />
   );
@@ -108,13 +112,36 @@ export default function Chat({navigation, route}) {
       onSend={text => onSend(text)}
       showUserAvatar={false}
       showAvatarForEveryMessage={false}
-      messagesContainerStyle={{
-        backgroundColor: '#fff', 
-      }}
       user={{
         _id: currentUser,
       }}
       renderBubble={renderBubble}
+      renderAvatar={null}
+      bottomOffset={insets.bottom}
+      messagesContainerStyle={{
+        backgroundColor: Colors.white,
+        paddingBottom: 40,
+      }}
+      minInputToolbarHeight={Keyboard.isVisible ? 0 : 40}
+      renderSend={(props) => {
+        return (
+          <Send
+            {...props}
+            containerStyle={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
+            <MaterialCommunityIcons
+              name="send-circle"
+              size={40}
+              color={"#06BCEE"}
+            />
+          </Send>
+        );
+      }}
+      alwaysShowSend
     />
   )
 }
