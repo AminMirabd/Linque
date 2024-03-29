@@ -11,17 +11,18 @@ const ScheduleNavigation = () => {
     <Stack.Navigator
       initialRouteName="Schedule"
       screenOptions={{
-        headerShown: false,
+        headerShown: true,
         animation: "slide_from_right",
       }}
     >
-      <Stack.Screen component={Calendar} name="Calendar" />
-      <Stack.Screen component={AddEvent} name="AddEvent" />
-      <Stack.Screen
+      <Stack.Screen component={Calendar} name="Calendar" options={{title:"Calendar", headerBackVisible: false,}} />
+      <Stack.Screen component={AddEvent} name="AddEvent" options={{title:"Calendar", headerBackVisible: false,}} />
+      {/* <Stack.Screen
         component={ViewEvent}
         name="ViewEvent"
         initialParams={{ id: null }}
-      />
+      /> */}
+      <Stack.Screen component={ViewEvent} name="ViewEvent" options={{title:"Calendar", headerBackVisible: false,}}/>
     </Stack.Navigator>
   );
 };

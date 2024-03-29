@@ -13,6 +13,47 @@ import {
 } from "../../../../../utils/firebaseOperations";
 import Label from "../../../../components/global/label";
 import Button from "../../../../components/customElements/button";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+//import DocumentPicker from 'react-native-document-picker'
+
+
+// const selectAndUploadFile = async () => {
+//   try {
+//     const result = await DocumentPicker.pick({
+//       type: [DocumentPicker.types.allFiles],
+//     });
+
+//     // Once a file is picked, upload it to Firebase Storage
+//     const uploadUrl = await uploadFileToFirebaseStorage(result.uri, result.name);
+//     if (uploadUrl) {
+//       // Here you could update the state to include this new URL
+//       setDocumentURLs(prevUrls => [...prevUrls, uploadUrl]);
+//     }
+//   } catch (err) {
+//     if (DocumentPicker.isCancel(err)) {
+//       console.log('User cancelled the picker');
+//     } else {
+//       console.error('DocumentPicker error: ', err);
+//     }
+//   }
+// };
+
+
+// const uploadFileToFirebaseStorage = async (fileUri, fileName) => {
+//   const fileBlob = await fetch(fileUri).then(r => r.blob());
+//   const storageRef = ref(getStorage(), `uploads/${fileName}`);
+  
+//   try {
+//     const snapshot = await uploadBytes(storageRef, fileBlob);
+//     const downloadURL = await getDownloadURL(snapshot.ref);
+//     console.log('File uploaded successfully:', downloadURL);
+//     return downloadURL;
+//   } catch (error) {
+//     console.error("Error uploading file:", error);
+//     return null;
+//   }
+// };
+
 
 let randomstring = require("randomstring");
 
@@ -21,8 +62,9 @@ const AddEvent = (props) => {
   const [date, setDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  const [startingDate, setStartingDate] = useState(null);
-  const [endingDate, setEndingDate] = useState(null);
+  // const [startingDate, setStartingDate] = useState(null);
+  // const [endingDate, setEndingDate] = useState(null);
+
 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -30,6 +72,28 @@ const AddEvent = (props) => {
   const [color, setColor] = useState("");
   const [employees, setEmployees] = useState([]);
   const [listEmployeesAssigned, setListEmployeesAssigneed] = useState([]);
+
+  //Fetch all users from the database
+  useEffect(() => {
+    getAllUsersDB(setEmployees);
+  }, []);
+
+  const uploadFileToFirebaseStorage = async (fileUri) => {
+    const fileName = `documents/${new Date().toISOString()}-${fileUri.substring(fileUri.lastIndexOf('/') + 1)}`;
+    const storageRef = ref(getStorage(), fileName);
+    const response = await fetch(fileUri);
+    const blob = await response.blob();
+  
+    try {
+      const snapshot = await uploadBytes(storageRef, blob);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+      console.log('File uploaded!', downloadURL);
+      return downloadURL; // Return the URL for further use
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return null;
+    }
+  };
 
   //Fetch all users from the database
   useEffect(() => {

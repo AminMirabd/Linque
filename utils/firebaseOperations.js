@@ -69,18 +69,25 @@ export const addMessageDB = async (chatId, message) => {
 
 //Get functions
 
-export const getUserInfoDB = async (uid, setUserData) => {
+
+export const getUserInfoDB = async (uid, setUserData = null) => {
   try {
     const docRef = doc(database, "users", uid);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      setUserData(docSnap.data());
+      const userData = docSnap.data();
+      if (setUserData) {
+        setUserData(userData);
+      }
+      return userData; // Return the data for direct usage
     }
   } catch (e) {
     console.error("Error getting user", e);
+    return null; // Ensure a null return on error for consistency
   }
 };
+
 export const getAllUsersDB = async (setUsers) => {
   const q = query(collection(database, "users"));
   onSnapshot(q, (querySnapshot) => {
