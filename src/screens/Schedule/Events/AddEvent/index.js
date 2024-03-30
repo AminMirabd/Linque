@@ -10,7 +10,8 @@ import {
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { Easing } from "react-native-reanimated";
 import ColorPicker, { Swatches } from "reanimated-color-picker";
-import { AntDesign } from "@expo/vector-icons";
+
+import { AntDesign, Ionicons } from "@expo/vector-icons";
 import * as DocumentPicker from "expo-document-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { MotiView, MotiText } from "moti";
@@ -24,6 +25,7 @@ import Label from "../../../../components/global/label";
 import Button from "../../../../components/customElements/button";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Colors from "../../../../../utils/Colors";
+// import FileViewer from "react-native-file-viewer";
 
 let randomstring = require("randomstring");
 
@@ -106,21 +108,9 @@ const AddEvent = (props) => {
     setListEmployeesAssigneed(auxList);
   };
 
-  // const openFile = (uri) => {
-  //   Linking.canOpenURL(uri)
-  //     .then((supported) => {
-  //       if (!supported) {
-  //         console.log("Can't handle url: " + uri);
-  //       } else {
-  //         return Linking.openURL(uri);
-  //       }
-  //     })
-  //     .catch((err) => console.error("An error occurred", err));
-  // };
-
   const pickDocument = async () => {
     if (selectedFiles.length >= 3) {
-      alert("You can only add up to 3 selectedFiles.");
+      alert("You can only add up to 3 files.");
       return;
     }
 
@@ -141,7 +131,7 @@ const AddEvent = (props) => {
     const storage = getStorage();
 
     const uploadPromises = selectedFiles.map(async (file) => {
-      const storageRef = ref(storage, `eventsDocuments/${id + file.name}`);
+      const storageRef = ref(storage, `eventsDocuments/id/${file.name}`);
       const response = await fetch(file.uri);
       const blob = await response.blob();
       await uploadBytes(storageRef, blob);
@@ -388,12 +378,24 @@ const AddEvent = (props) => {
           <>
             <TouchableOpacity
               key={index}
-              // onPress={() => openFile(file.uri)}
-              className="border-b-[1px] border-grayLowContrast max-w-fit mr-10"
+              className="border-b-[1px] border-grayLowContrast max-w-fit mr-10 flex-row items-center justify-start mb-5"
             >
-              <Text className="font-medium text-grayHighContranst">
+              <Text className="mr-5 font-medium text-grayHighContranst">
                 {file.name}
               </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedFiles(
+                    selectedFiles.filter((item, i) => i !== index)
+                  );
+                }}
+              >
+                <Ionicons
+                  name="close-circle-outline"
+                  size={16}
+                  color={Colors.grayHighContranst}
+                />
+              </TouchableOpacity>
             </TouchableOpacity>
           </>
         ))}

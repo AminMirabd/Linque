@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity } from "react-native";
+import { View, Text, FlatList, TouchableOpacity, Linking } from "react-native";
 import PageContainer from "../../../../components/global/pageContainer";
-import { FontAwesome } from "@expo/vector-icons";
+import { FontAwesome, MaterialCommunityIcons } from "@expo/vector-icons";
 import {
   getEventInfoDB,
   getUserInfoDB,
@@ -35,6 +35,10 @@ const ViewEvent = ({ route, navigation }) => {
     }
   }, [eventData]);
 
+  useEffect(() => {
+    console.log(eventData);
+  }, [eventData]);
+
   const getEventData = async () => {
     setIsLoading(true);
     await getEventInfoDB(id, setEventData).then(() => {});
@@ -57,6 +61,20 @@ const ViewEvent = ({ route, navigation }) => {
       <Text>{value}</Text>
     </View>
   );
+
+  const extractFileName = (url) => {
+    const decodedUrl = decodeURIComponent(url); // Decode the URL
+    const segments = decodedUrl.split("/"); // Split the URL by '/'
+    const lastSegment = segments.pop(); // Get the last part (file name with parameters)
+    const fileName = lastSegment.split("?")[0]; // Split by '?' and take the file name
+    return fileName;
+  };
+
+  const handlePress = (url) => {
+    Linking.openURL(url).catch((err) => {
+      console.error("Failed to open URL:", err);
+    });
+  };
 
   const itemSeparator = () => {
     return <View className="h-[1px] bg-grayLowContrast w-full" />;
@@ -114,6 +132,29 @@ const ViewEvent = ({ route, navigation }) => {
                 : "N/A"
             }
           />
+          {eventData.files && eventData.files.length > 0 && (
+            <View className="mb-15">
+              <Label style={"font-bold text-[20px]"}>Files attached:</Label>
+              <View className="flex flex-row flex-wrap items-center mt-10">
+                {eventData.files.map((file, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    onPress={() => handlePress(file)}
+                    className="flex-row items-center justify-start p-10 mb-10 mr-10 rounded-10 bg-grayLowContrast max-w-fit"
+                  >
+                    <MaterialCommunityIcons
+                      name="file-link"
+                      size={24}
+                      color={Colors.grayHighContranst}
+                    />
+                    <Text className="ml-5 font-medium text-grayHighContranst">
+                      {extractFileName(file)}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+            </View>
+          )}
         </>
       )}
     </PageContainer>
