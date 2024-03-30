@@ -39,7 +39,8 @@
     "react-native-screens": "~3.29.0",
     "react-native-timetable": "^1.0.6",
     "reanimated-color-picker": "^3.0.3",
-    "typescript": "^5.3.0"
+    "typescript": "^5.3.0",
+    "expo-document-picker": "~11.10.1"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

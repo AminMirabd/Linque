@@ -1,9 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Platform,
+  Linking,
+} from "react-native";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { Easing } from "react-native-reanimated";
 import ColorPicker, { Swatches } from "reanimated-color-picker";
 import { AntDesign } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { MotiView, MotiText } from "moti";
 import PageContainer from "../../../../components/global/pageContainer";
@@ -16,43 +24,6 @@ import Label from "../../../../components/global/label";
 import Button from "../../../../components/customElements/button";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import Colors from "../../../../../utils/Colors";
-//import DocumentPicker from 'react-native-document-picker'
-
-// const selectAndUploadFile = async () => {
-//   try {
-//     const result = await DocumentPicker.pick({
-//       type: [DocumentPicker.types.allFiles],
-//     });
-
-//     // Once a file is picked, upload it to Firebase Storage
-//     const uploadUrl = await uploadFileToFirebaseStorage(result.uri, result.name);
-//     if (uploadUrl) {
-//       // Here you could update the state to include this new URL
-//       setDocumentURLs(prevUrls => [...prevUrls, uploadUrl]);
-//     }
-//   } catch (err) {
-//     if (DocumentPicker.isCancel(err)) {
-//       console.log('User cancelled the picker');
-//     } else {
-//       console.error('DocumentPicker error: ', err);
-//     }
-//   }
-// };
-
-// const uploadFileToFirebaseStorage = async (fileUri, fileName) => {
-//   const fileBlob = await fetch(fileUri).then(r => r.blob());
-//   const storageRef = ref(getStorage(), `uploads/${fileName}`);
-
-//   try {
-//     const snapshot = await uploadBytes(storageRef, fileBlob);
-//     const downloadURL = await getDownloadURL(snapshot.ref);
-//     console.log('File uploaded successfully:', downloadURL);
-//     return downloadURL;
-//   } catch (error) {
-//     console.error("Error uploading file:", error);
-//     return null;
-//   }
-// };
 
 let randomstring = require("randomstring");
 
@@ -62,55 +33,20 @@ const AddEvent = (props) => {
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
 
+  const id = randomstring.generate(10);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("");
   const [employees, setEmployees] = useState([]);
   const [listEmployeesAssigned, setListEmployeesAssigneed] = useState([]);
-  const [files, setFiles] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [selectedFilesUrl, setSelectedFilesUrl] = useState([]);
 
   //Fetch all users from the database
   useEffect(() => {
     getAllUsersDB(setEmployees);
   }, []);
-
-  const uploadFileToFirebaseStorage = async (fileUri) => {
-    const fileName = `documents/${new Date().toISOString()}-${fileUri.substring(
-      fileUri.lastIndexOf("/") + 1
-    )}`;
-    const storageRef = ref(getStorage(), fileName);
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
-
-    try {
-      const snapshot = await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log("File uploaded!", downloadURL);
-      return downloadURL; // Return the URL for further use
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      return null;
-    }
-  };
-
-  //Fetch all users from the database
-  useEffect(() => {
-    getAllUsersDB(setEmployees);
-  }, []);
-
-  const generateRandomDate = () => {
-    const year = 2024;
-    const month = 2; // March is 2 in JavaScript (0-indexed)
-    const day = Math.floor(Math.random() * 31) + 1; // Random day between 1 and 31
-    const hours = Math.floor(Math.random() * 24); // Random hour between 0 and 23
-    const minutes = Math.floor(Math.random() * 60); // Random minute between 0 and 59
-    const seconds = Math.floor(Math.random() * 60); // Random second between 0 and 59
-    const milliseconds = Math.floor(Math.random() * 1000); // Random millisecond between 0 and 999
-
-    // Create a new Date object with the generated values
-    return new Date(year, month, day, hours, minutes, seconds, milliseconds);
-  };
 
   const onChangeDate = (event, selectedDate) => {
     const currentDate = selectedDate || date;
@@ -170,35 +106,96 @@ const AddEvent = (props) => {
     setListEmployeesAssigneed(auxList);
   };
 
-  const handleCreateEvent = () => {
-    setLoading(true);
-    const date = getISODateTime();
-    const fromDate = date.isoStartDateTime;
-    const toDate = date.isoEndDateTime;
+  // const openFile = (uri) => {
+  //   Linking.canOpenURL(uri)
+  //     .then((supported) => {
+  //       if (!supported) {
+  //         console.log("Can't handle url: " + uri);
+  //       } else {
+  //         return Linking.openURL(uri);
+  //       }
+  //     })
+  //     .catch((err) => console.error("An error occurred", err));
+  // };
 
-    const eventObj = {
-      id: randomstring.generate(10),
-      title: title,
-      description: description,
-      color: color,
-      employeesAssigned: listEmployeesAssigned,
-      date: {
-        from: fromDate,
-        to: toDate,
-      },
-    };
+  const pickDocument = async () => {
+    if (selectedFiles.length >= 3) {
+      alert("You can only add up to 3 selectedFiles.");
+      return;
+    }
 
-    addEventDB(eventObj).then(() => {
-      setLoading(false);
-      Dialog.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: `${title} event added`,
-        textBody: "The event has been created successfully.",
-        button: "Close",
-        autoClose: 400,
-        onHide: () => navigation.navigate("Calendar"),
+    let result = await DocumentPicker.getDocumentAsync({});
+    if (!result.canceled && result.assets) {
+      const newFiles = result.assets.map((file) => {
+        return { name: file.name, uri: file.uri, type: file.mimeType };
       });
+
+      // Add the new selectedFiles to the existing array, ensuring the total count doesn't exceed 3
+      setSelectedFiles((currentFiles) =>
+        [...currentFiles, ...newFiles].slice(0, 3)
+      );
+    }
+  };
+
+  const uploadFile = async () => {
+    const storage = getStorage();
+
+    const uploadPromises = selectedFiles.map(async (file) => {
+      const storageRef = ref(storage, `eventsDocuments/${id + file.name}`);
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+      await uploadBytes(storageRef, blob);
+
+      // Get the download URL
+      return getDownloadURL(storageRef);
     });
+
+    try {
+      const urls = await Promise.all(uploadPromises);
+      console.log("All files uploaded successfully. URLs:", urls);
+      return urls; // Return the URLs instead of setting state
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      return []; // Return an empty array in case of error
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    setLoading(true);
+
+    const uploadedFileUrls = await uploadFile(); // Await the URLs here
+
+    if (selectedFiles.length > 0 && uploadedFileUrls.length > 0) {
+      console.log(uploadedFileUrls, "url????");
+      const date = getISODateTime();
+      const fromDate = date.isoStartDateTime;
+      const toDate = date.isoEndDateTime;
+
+      const eventObj = {
+        id: id,
+        title: title,
+        description: description,
+        color: color,
+        employeesAssigned: listEmployeesAssigned,
+        date: {
+          from: fromDate,
+          to: toDate,
+        },
+        files: uploadedFileUrls,
+      };
+
+      addEventDB(eventObj).then(() => {
+        setLoading(false);
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: `${title} event added`,
+          textBody: "The event has been created successfully.",
+          button: "Close",
+          autoClose: 400,
+          onHide: () => navigation.navigate("Calendar"),
+        });
+      });
+    }
   };
 
   const itemSeparator = () => {
@@ -368,12 +365,12 @@ const AddEvent = (props) => {
         </View>
       </View>
 
-      <View className="flex flex-col mb-15">
-        <Label>Attach files:</Label>
+      <View className="flex flex-col mb-10">
+        <Label>Attach selectedFiles:</Label>
         <TouchableOpacity
           className="p-20 rounded-20 border-grayLowContrast border-[1px] flex flex-row items-center justify-start bg-grayLowContrast"
           onPress={() => {
-            // selectFile();
+            pickDocument();
           }}
         >
           <AntDesign
@@ -382,13 +379,25 @@ const AddEvent = (props) => {
             color={Colors.grayHighContranst}
           />
           <Text className="ml-10 font-medium text-grayHighContranst">
-            Add up to three files *
+            Add up to three selectedFiles *
           </Text>
         </TouchableOpacity>
       </View>
-      {files.map((file, index) => (
-        <Text key={index}>{file.name}</Text>
-      ))}
+      <View className="flex flex-row flex-wrap items-center mb-50">
+        {selectedFiles.map((file, index) => (
+          <>
+            <TouchableOpacity
+              key={index}
+              // onPress={() => openFile(file.uri)}
+              className="border-b-[1px] border-grayLowContrast max-w-fit mr-10"
+            >
+              <Text className="font-medium text-grayHighContranst">
+                {file.name}
+              </Text>
+            </TouchableOpacity>
+          </>
+        ))}
+      </View>
 
       <Button onPress={handleCreateEvent} loading={loading}>
         Create Event
