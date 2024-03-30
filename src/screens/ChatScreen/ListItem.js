@@ -6,20 +6,29 @@ import {
   getAllUsersDB,
   getLastMessagaDB,
 } from "../../../utils/firebaseOperations";
-import { auth } from "../../../firebase";
+import { auth, database } from "../../../firebase";
 import Chat from "./GroupChatScreen";
 import { Ionicons } from "@expo/vector-icons";
 //import { Colors } from "react-native/Libraries/NewAppScreen";
 import Colors from "../../../utils/Colors";
 import GroupChat from "./GroupChatScreen";
+import {
+  collection,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+} from "firebase/firestore";
 
 const ListItem = (props) => {
   const { navigation } = props;
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [searchValue, setSearchValue] = useState("");
+
   useEffect(() => {
     const unsubscribes = [];
+
     getAllUsersDB(async (fetchedUsers) => {
       const usersWithSubscriptions = fetchedUsers.map((user) => {
         const currentUserUID = auth.currentUser.uid;
@@ -109,26 +118,7 @@ const ListItem = (props) => {
           ? `${user.UID}-${currentUserUID}`
           : `${currentUserUID}-${user.UID}`;
 
-      const messagesRef = collection(database, "chatrooms", chatId, "messages");
-      const q = query(messagesRef, orderBy("createdAt", "desc"), limit(1));
-
-      const unsubscribe = onSnapshot(q, (querySnapshot) => {
-        if (!querySnapshot.empty) {
-          const data = querySnapshot.docs[0].data();
-          let multiLine = data.text.split("\n");
-          if (data.text.length > 20) {
-            data.text = data.text.slice(0, 19) + "...";
-          }
-          if (multiLine.length > 1) {
-            data.text = multiLine[0];
-          }
-          setLastMessage(data.text);
-        } else {
-          setLastMessage("No messages yet");
-        }
-      });
-
-      return () => unsubscribe();
+      getLastMessagaDB(chatId, setLastMessage);
     }, [user.UID]);
 
     return (

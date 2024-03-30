@@ -69,7 +69,6 @@ export const addMessageDB = async (chatId, message) => {
 
 //Get functions
 
-
 export const getUserInfoDB = async (uid, setUserData = null) => {
   try {
     const docRef = doc(database, "users", uid);
@@ -87,9 +86,18 @@ export const getUserInfoDB = async (uid, setUserData = null) => {
     return null; // Ensure a null return on error for consistency
   }
 };
-
 export const getAllUsersDB = async (setUsers) => {
   const q = query(collection(database, "users"));
+  onSnapshot(q, (querySnapshot) => {
+    const users = [];
+    querySnapshot.forEach((doc) => {
+      users.push(doc.data());
+    });
+    setUsers(users);
+  });
+};
+export const getUsersByIdsDB = async (ids, setUsers) => {
+  const q = query(collection(database, "users"), where("UID", "in", ids));
   onSnapshot(q, (querySnapshot) => {
     const users = [];
     querySnapshot.forEach((doc) => {
@@ -143,12 +151,23 @@ export const getLastMessagaDB = async (chatId, setLastMessage) => {
   onSnapshot(q, (querySnapshot) => {
     if (!querySnapshot.empty) {
       const data = querySnapshot.docs[0].data();
+      const multiline = data.text.split("\n");
+
+      if (data.text.length > 20) {
+        data.text = data.text.slice(0, 19) + "...";
+      }
+
+      if (multiline.length > 1) {
+        data.text = multiline[0] + "...";
+      }
+
       setLastMessage(data.text);
     } else {
       setLastMessage("No messages yet");
     }
   });
 };
+
 export const getMessagesDB = (chatId, setMessages) => {
   const messagesRef = collection(database, "chatrooms", chatId, "messages");
 

@@ -1,8 +1,9 @@
-import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
+import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { Easing } from "react-native-reanimated";
 import ColorPicker, { Swatches } from "reanimated-color-picker";
+import { AntDesign } from "@expo/vector-icons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { MotiView, MotiText } from "moti";
 import PageContainer from "../../../../components/global/pageContainer";
@@ -14,8 +15,8 @@ import {
 import Label from "../../../../components/global/label";
 import Button from "../../../../components/customElements/button";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import Colors from "../../../../../utils/Colors";
 //import DocumentPicker from 'react-native-document-picker'
-
 
 // const selectAndUploadFile = async () => {
 //   try {
@@ -38,11 +39,10 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 //   }
 // };
 
-
 // const uploadFileToFirebaseStorage = async (fileUri, fileName) => {
 //   const fileBlob = await fetch(fileUri).then(r => r.blob());
 //   const storageRef = ref(getStorage(), `uploads/${fileName}`);
-  
+
 //   try {
 //     const snapshot = await uploadBytes(storageRef, fileBlob);
 //     const downloadURL = await getDownloadURL(snapshot.ref);
@@ -54,7 +54,6 @@ import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 //   }
 // };
 
-
 let randomstring = require("randomstring");
 
 const AddEvent = (props) => {
@@ -62,9 +61,6 @@ const AddEvent = (props) => {
   const [date, setDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  // const [startingDate, setStartingDate] = useState(null);
-  // const [endingDate, setEndingDate] = useState(null);
-
 
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
@@ -72,6 +68,7 @@ const AddEvent = (props) => {
   const [color, setColor] = useState("");
   const [employees, setEmployees] = useState([]);
   const [listEmployeesAssigned, setListEmployeesAssigneed] = useState([]);
+  const [files, setFiles] = useState([]);
 
   //Fetch all users from the database
   useEffect(() => {
@@ -79,15 +76,17 @@ const AddEvent = (props) => {
   }, []);
 
   const uploadFileToFirebaseStorage = async (fileUri) => {
-    const fileName = `documents/${new Date().toISOString()}-${fileUri.substring(fileUri.lastIndexOf('/') + 1)}`;
+    const fileName = `documents/${new Date().toISOString()}-${fileUri.substring(
+      fileUri.lastIndexOf("/") + 1
+    )}`;
     const storageRef = ref(getStorage(), fileName);
     const response = await fetch(fileUri);
     const blob = await response.blob();
-  
+
     try {
       const snapshot = await uploadBytes(storageRef, blob);
       const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('File uploaded!', downloadURL);
+      console.log("File uploaded!", downloadURL);
       return downloadURL; // Return the URL for further use
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -368,6 +367,28 @@ const AddEvent = (props) => {
           />
         </View>
       </View>
+
+      <View className="flex flex-col mb-15">
+        <Label>Attach files:</Label>
+        <TouchableOpacity
+          className="p-20 rounded-20 border-grayLowContrast border-[1px] flex flex-row items-center justify-start bg-grayLowContrast"
+          onPress={() => {
+            // selectFile();
+          }}
+        >
+          <AntDesign
+            name="addfile"
+            size={24}
+            color={Colors.grayHighContranst}
+          />
+          <Text className="ml-10 font-medium text-grayHighContranst">
+            Add up to three files *
+          </Text>
+        </TouchableOpacity>
+      </View>
+      {files.map((file, index) => (
+        <Text key={index}>{file.name}</Text>
+      ))}
 
       <Button onPress={handleCreateEvent} loading={loading}>
         Create Event
