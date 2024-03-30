@@ -131,7 +131,7 @@ const AddEvent = (props) => {
     const storage = getStorage();
 
     const uploadPromises = selectedFiles.map(async (file) => {
-      const storageRef = ref(storage, `eventsDocuments/id/${file.name}`);
+      const storageRef = ref(storage, `eventsDocuments/${id}/${file.name}`);
       const response = await fetch(file.uri);
       const blob = await response.blob();
       await uploadBytes(storageRef, blob);
@@ -356,7 +356,7 @@ const AddEvent = (props) => {
       </View>
 
       <View className="flex flex-col mb-10">
-        <Label>Attach selectedFiles:</Label>
+        <Label>Attach files:</Label>
         <TouchableOpacity
           className="p-20 rounded-20 border-grayLowContrast border-[1px] flex flex-row items-center justify-start bg-grayLowContrast"
           onPress={() => {
@@ -369,7 +369,7 @@ const AddEvent = (props) => {
             color={Colors.grayHighContranst}
           />
           <Text className="ml-10 font-medium text-grayHighContranst">
-            Add up to three selectedFiles *
+            Add up to three files *
           </Text>
         </TouchableOpacity>
       </View>

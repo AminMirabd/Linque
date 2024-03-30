@@ -56,7 +56,7 @@ const ViewEvent = ({ route, navigation }) => {
   };
 
   const InfoContainer = ({ title, value }) => (
-    <View className="flex-row items-center justify-start border-b-[1px] border-grayLowContrast pb-10 mb-10">
+    <View className="flex-row items-center justify-start border-b-[1px] border-grayLowContrast pb-10 mb-10 flex-wrap">
       <Text className="font-bold text-[20px]">{title}: </Text>
       <Text>{value}</Text>
     </View>
