@@ -20,7 +20,44 @@ import {
 import { getStorage, ref, deleteObject, uploadBytes } from "firebase/storage";
 
 //Add functions
-
+//
+// export const requestToTakeShift = async (eventId, employeeId) => {
+//   const shiftRequestRef = collection(database, "shiftRequests");
+//   try {
+//     await addDoc(shiftRequestRef, {
+//       eventId: eventId,
+//       employeeId: employeeId,
+//       requestedAt: serverTimestamp() // To record when the request was made
+//     });
+//     console.log("Shift request successfully made");
+//   } catch (error) {
+//     console.error("Error making shift request:", error);
+//   }
+// };
+export const requestToTakeShift = async (eventId, employeeId) => {
+  const eventRequestRef = doc(database, "shiftRequests", eventId);
+  try {
+    const docSnap = await getDoc(eventRequestRef);
+    if (docSnap.exists()) {
+      // If request exists, update the existing document
+      await updateDoc(eventRequestRef, {
+        employeesRequested: arrayUnion(employeeId),
+        requestedAt: serverTimestamp(), // Optional: Update if you want the latest request timestamp
+      });
+    } else {
+      // If no request exists, create a new document
+      await setDoc(eventRequestRef, {
+        eventId: eventId,
+        employeesRequested: [employeeId],
+        requestedAt: serverTimestamp(),
+      });
+    }
+    console.log("Shift request successfully updated/created");
+  } catch (error) {
+    console.error("Error making/updating shift request:", error);
+  }
+};
+//
 export const addUserDB = async (user) => {
   const usersRef = collection(database, "users");
   try {

@@ -1,8 +1,19 @@
-import { View, Text, FlatList, TouchableOpacity, Platform } from "react-native";
 import React, { useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  Platform,
+  Linking,
+  StyleSheet
+} from "react-native";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { Easing } from "react-native-reanimated";
 import ColorPicker, { Swatches } from "reanimated-color-picker";
+
+import { AntDesign, Ionicons } from "@expo/vector-icons";
+import * as DocumentPicker from "expo-document-picker";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { MotiView, MotiText } from "moti";
 import PageContainer from "../../../../components/global/pageContainer";
@@ -14,114 +25,111 @@ import {
 import Label from "../../../../components/global/label";
 import Button from "../../../../components/customElements/button";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-//import DocumentPicker from 'react-native-document-picker'
+import Colors from "../../../../../utils/Colors";
+import MapView, { Heatmap, PROVIDER_GOOGLE , Marker } from 'react-native-maps';
+import { GooglePlacesAutocomplete } from "react-native-google-places-autocomplete";
 
+  state = {
+    initialPosition: {
+      latitude: 43.4522474,
+      longitude: -80.4895363,
+      latitudeDelta: 0.09,
+      longitudeDelta: 0.035
+    }
+  }
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: Colors.grayLowContras,
+      borderRadius: 20, 
+      overflow: 'hidden',
+    },
+    map: {
+      height: 350,
 
-// const selectAndUploadFile = async () => {
-//   try {
-//     const result = await DocumentPicker.pick({
-//       type: [DocumentPicker.types.allFiles],
-//     });
-
-//     // Once a file is picked, upload it to Firebase Storage
-//     const uploadUrl = await uploadFileToFirebaseStorage(result.uri, result.name);
-//     if (uploadUrl) {
-//       // Here you could update the state to include this new URL
-//       setDocumentURLs(prevUrls => [...prevUrls, uploadUrl]);
-//     }
-//   } catch (err) {
-//     if (DocumentPicker.isCancel(err)) {
-//       console.log('User cancelled the picker');
-//     } else {
-//       console.error('DocumentPicker error: ', err);
-//     }
-//   }
-// };
-
-
-// const uploadFileToFirebaseStorage = async (fileUri, fileName) => {
-//   const fileBlob = await fetch(fileUri).then(r => r.blob());
-//   const storageRef = ref(getStorage(), `uploads/${fileName}`);
-  
-//   try {
-//     const snapshot = await uploadBytes(storageRef, fileBlob);
-//     const downloadURL = await getDownloadURL(snapshot.ref);
-//     console.log('File uploaded successfully:', downloadURL);
-//     return downloadURL;
-//   } catch (error) {
-//     console.error("Error uploading file:", error);
-//     return null;
-//   }
-// };
-
+      borderBottomLeftRadius: 20,
+      borderBottomRightRadius: 20,
+    },
+    search: {
+      position: 'relative', 
+      width: '100%',
+      zIndex: 5, 
+      borderTopLeftRadius: 20,
+      borderTopRightRadius: 20, 
+      backgroundColor: 'transparent', 
+    }
+  });
+// import FileViewer from "react-native-file-viewer";
 
 let randomstring = require("randomstring");
 
 const AddEvent = (props) => {
+  let lat = 0
+  let lng = 0;
   const { navigation } = props;
   const [date, setDate] = useState(new Date());
   const [startTime, setStartTime] = useState(new Date());
   const [endTime, setEndTime] = useState(new Date());
-  // const [startingDate, setStartingDate] = useState(null);
-  // const [endingDate, setEndingDate] = useState(null);
 
+//
+const [selectedLocation, setSelectedLocation] = useState(null);
 
+  //
+
+  const id = randomstring.generate(10);
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [color, setColor] = useState("");
   const [employees, setEmployees] = useState([]);
   const [listEmployeesAssigned, setListEmployeesAssigneed] = useState([]);
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  //
+  const [showDatePicker, setShowDatePicker] = useState(Platform.OS === 'ios');
+  const [showStartTimePicker, setShowStartTimePicker] = useState(Platform.OS === 'ios');
+  const [showEndTimePicker, setShowEndTimePicker] = useState(Platform.OS === 'ios');
 
-  const uploadFileToFirebaseStorage = async (fileUri) => {
-    const fileName = `documents/${new Date().toISOString()}-${fileUri.substring(fileUri.lastIndexOf('/') + 1)}`;
-    const storageRef = ref(getStorage(), fileName);
-    const response = await fetch(fileUri);
-    const blob = await response.blob();
-  
-    try {
-      const snapshot = await uploadBytes(storageRef, blob);
-      const downloadURL = await getDownloadURL(snapshot.ref);
-      console.log('File uploaded!', downloadURL);
-      return downloadURL; // Return the URL for further use
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      return null;
-    }
+
+  const onChangeDate = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    setShowDatePicker(Platform.OS === 'ios');
+    setDate(currentDate);
   };
+
+  const onChangeStartTime = (event, selectedTime) => {
+    const currentTime = selectedTime || startTime;
+    setShowStartTimePicker(Platform.OS === 'ios');
+    setStartTime(currentTime);
+  };
+
+  const onChangeEndTime = (event, selectedTime) => {
+    const currentTime = selectedTime || endTime;
+    setShowEndTimePicker(Platform.OS === 'ios');
+    setEndTime(currentTime);
+  };
+
+  //
 
   //Fetch all users from the database
   useEffect(() => {
     getAllUsersDB(setEmployees);
   }, []);
 
-  const generateRandomDate = () => {
-    const year = 2024;
-    const month = 2; // March is 2 in JavaScript (0-indexed)
-    const day = Math.floor(Math.random() * 31) + 1; // Random day between 1 and 31
-    const hours = Math.floor(Math.random() * 24); // Random hour between 0 and 23
-    const minutes = Math.floor(Math.random() * 60); // Random minute between 0 and 59
-    const seconds = Math.floor(Math.random() * 60); // Random second between 0 and 59
-    const milliseconds = Math.floor(Math.random() * 1000); // Random millisecond between 0 and 999
+  // const onChangeDate = (event, selectedDate) => {
+  //   const currentDate = selectedDate || date;
+  //   setDate(currentDate);
+  // };
 
-    // Create a new Date object with the generated values
-    return new Date(year, month, day, hours, minutes, seconds, milliseconds);
-  };
+  // const onChangeStartTime = (event, selectedTime) => {
+  //   const currentTime = selectedTime || startTime;
+  //   setStartTime(currentTime);
+  // };
 
-  const onChangeDate = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setDate(currentDate);
-  };
-
-  const onChangeStartTime = (event, selectedTime) => {
-    const currentTime = selectedTime || startTime;
-    setStartTime(currentTime);
-  };
-
-  const onChangeEndTime = (event, selectedTime) => {
-    const currentTime = selectedTime || endTime;
-    setEndTime(currentTime);
-  };
+  // const onChangeEndTime = (event, selectedTime) => {
+  //   const currentTime = selectedTime || endTime;
+  //   setEndTime(currentTime);
+  // };
 
   const combineDateAndTime = (date, time) => {
     let combined = new Date(date);
@@ -146,7 +154,6 @@ const AddEvent = (props) => {
     setColor(hex);
   };
 
-  //Validate if an employee is already assigned
   const validateEmployeeAssigned = (listEmployees, employee) => {
     if (listEmployees.find((value) => value === employee)) {
       return true;
@@ -166,35 +173,82 @@ const AddEvent = (props) => {
     setListEmployeesAssigneed(auxList);
   };
 
-  const handleCreateEvent = () => {
-    setLoading(true);
-    const date = getISODateTime();
-    const fromDate = date.isoStartDateTime;
-    const toDate = date.isoEndDateTime;
+  const pickDocument = async () => {
+    if (selectedFiles.length >= 3) {
+      alert("You can only add up to 3 files.");
+      return;
+    }
 
-    const eventObj = {
-      id: randomstring.generate(10),
-      title: title,
-      description: description,
-      color: color,
-      employeesAssigned: listEmployeesAssigned,
-      date: {
-        from: fromDate,
-        to: toDate,
-      },
-    };
-
-    addEventDB(eventObj).then(() => {
-      setLoading(false);
-      Dialog.show({
-        type: ALERT_TYPE.SUCCESS,
-        title: `${title} event added`,
-        textBody: "The event has been created successfully.",
-        button: "Close",
-        autoClose: 400,
-        onHide: () => navigation.navigate("Calendar"),
+    let result = await DocumentPicker.getDocumentAsync({});
+    if (!result.canceled && result.assets) {
+      const newFiles = result.assets.map((file) => {
+        return { name: file.name, uri: file.uri, type: file.mimeType };
       });
+
+      // Add the new selectedFiles to the existing array, ensuring the total count doesn't exceed 3
+      setSelectedFiles((currentFiles) =>
+        [...currentFiles, ...newFiles].slice(0, 3)
+      );
+    }
+  };
+
+  const uploadFile = async () => {
+    const storage = getStorage();
+
+    const uploadPromises = selectedFiles.map(async (file) => {
+      const storageRef = ref(storage, `eventsDocuments/${id}/${file.name}`);
+      const response = await fetch(file.uri);
+      const blob = await response.blob();
+      await uploadBytes(storageRef, blob);
+
+      return getDownloadURL(storageRef);
     });
+
+    try {
+      const urls = await Promise.all(uploadPromises);
+      console.log("All files uploaded successfully. URLs:", urls);
+      return urls;
+    } catch (error) {
+      console.error("Error uploading files:", error);
+      return [];
+    }
+  };
+
+  const handleCreateEvent = async () => {
+    setLoading(true);
+
+    const uploadedFileUrls = await uploadFile();
+
+      console.log(uploadedFileUrls, "url????");
+      const date = getISODateTime();
+      const fromDate = date.isoStartDateTime;
+      const toDate = date.isoEndDateTime;
+
+      const eventObj = {
+        id: id,
+        title: title,
+        description: description,
+        color: color,
+        employeesAssigned: listEmployeesAssigned,
+        date: {
+          from: fromDate,
+          to: toDate,
+        },
+        location: selectedLocation ? selectedLocation : this.state.initialPosition,
+        files: uploadedFileUrls && uploadedFileUrls.length > 0 ? uploadedFileUrls : [],
+      };
+
+      addEventDB(eventObj).then(() => { 
+        setLoading(false);
+        Dialog.show({
+          type: ALERT_TYPE.SUCCESS,
+          title: `${title} event added`,
+          textBody: "The event has been created successfully.",
+          button: "Close",
+          autoClose: 400,
+          onHide: () => navigation.navigate("Calendar"),
+        });
+      });
   };
 
   const itemSeparator = () => {
@@ -284,50 +338,106 @@ const AddEvent = (props) => {
         setValue={setDescription}
       />
 
+
       {/* Date */}
       <View className="flex items-start justify-start w-fill">
-        <Label>Date:</Label>
-        <DateTimePicker
-          value={date}
-          mode="date"
-          display="spinner"
-          onChange={onChangeDate}
-        />
+        <Text>Date:</Text>
+        {Platform.OS === 'android' && (
+          <TouchableOpacity
+          onPress={() => setShowDatePicker(true)}
+          style={{
+            height: 40, 
+            backgroundColor: '#F0F0F0',
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingVertical: 10,
+            paddingHorizontal: 10,
+            borderRadius: 5,
+            marginBottom: 20,
+            marginTop: 5,
+          }}
+        >
+          <Text style={{ color: '#000000' }}>{date.toDateString()}</Text>
+        </TouchableOpacity>
+        
+        )}
+        {showDatePicker && (
+          <DateTimePicker
+            value={date}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onChangeDate}
+            onTouchCancel={() => { if (Platform.OS === 'android') setShowDatePicker(false) }}
+          />
+        )}
       </View>
-
-      {/* Time range */}
-      <View className="flex items-start justify-start w-fill">
-        <Label>Time range:</Label>
-        <View className="flex flex-row mt-5">
-          {/* Start time */}
-          <View className="flex flex-row items-center justify-center">
-            <Text className="pl-5 text-grayHighContranst">From:</Text>
+      <View>
+        {/* Start time */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start' }}>
+          <Text style={{ color: '#000000' }}>From:</Text>
+          {Platform.OS === 'android' && (
+            <TouchableOpacity
+              onPress={() => setShowStartTimePicker(true)}
+              style={{
+                height: 40, 
+                backgroundColor: '#F0F0F0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                borderRadius: 5,
+                marginLeft: 4,
+              }}
+            >
+              <Text style={{ color: '#000000' }}>{startTime.toLocaleTimeString()}</Text>
+            </TouchableOpacity>
+          )}
+          {showStartTimePicker && (
             <DateTimePicker
               value={startTime}
               mode="time"
               display="default"
               onChange={onChangeStartTime}
             />
-          </View>
+          )}
+        </View>
 
-          {/* End time */}
-          <View className="flex flex-row items-center justify-center">
-            <Text className="ml-10 text-grayHighContranst">To:</Text>
+        {/* End time */}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-start', marginTop: 10 }}>
+          <Text style={{ color: '#000000' }}>To:</Text>
+          {Platform.OS === 'android' && (
+            <TouchableOpacity
+              onPress={() => setShowEndTimePicker(true)}
+              style={{
+                height: 40, 
+                backgroundColor: '#F0F0F0',
+                justifyContent: 'center',
+                alignItems: 'center',
+                paddingVertical: 10,
+                paddingHorizontal: 10,
+                borderRadius: 5,
+                marginLeft: 20,
+              }}
+            >
+              <Text style={{ color: '#000000' }}>{endTime.toLocaleTimeString()}</Text>
+            </TouchableOpacity>
+          )}
+          {showEndTimePicker && (
             <DateTimePicker
               value={endTime}
               mode="time"
               display="default"
               onChange={onChangeEndTime}
             />
-          </View>
+          )}
         </View>
       </View>
 
+
       {/* Color Picker */}
-      <View className="flex flex-col mb-15">
+      <View className="mt-15 flex flex-col mb-15">
         <Label>Color:</Label>
-        <View className="rounded-10 border-[1px] border-grayLowContrast overflow-hidden">
-          {/* Color picker */}
+        <View className="mt-5 rounded-10 border-[1px] border-grayLowContrast overflow-hidden">
           <View className="relative px-10 py-15">
             <ColorPicker
               className="w-full"
@@ -347,9 +457,53 @@ const AddEvent = (props) => {
           ></View>
         </View>
       </View>
-
+      <View style={styles.container}>
+        <GooglePlacesAutocomplete
+          style={styles.search}
+          fetchDetails={true}
+          placeholder='Search'
+          onPress={(data, details = null) => {
+            console.log(data,'\n\n\n',details)
+            if (details?.geometry?.location) {
+              setSelectedLocation({
+                latitude: details.geometry.location.lat,
+                longitude: details.geometry.location.lng,
+                latitudeDelta: 0.5,
+                longitudeDelta: 0.5,
+                address: details.formatted_address,
+                url: details.url,
+              });
+              console.log(details.formatted_address,details.url);
+            } else {
+              console.error('Details are undefined or missing location');
+            }
+          }}
+          query={{
+            radius: 10000,
+            key: '',
+            language: 'en',
+          }}
+        />
+        <MapView
+          showsUserLocation={true}
+          showsMyLocationButton={true}
+          showsCompass={true}
+          provider={PROVIDER_GOOGLE}
+          ref={map => this._map = map}
+          style={styles.map}
+          initialRegion={this.state.initialPosition}
+          region={selectedLocation ? selectedLocation : this.state.initialPosition}
+          >
+            {selectedLocation && (
+              <Marker
+                coordinate={selectedLocation}
+                title="Selected Location"
+              />
+            )}
+        </MapView>
+      </View>
       {/* Assign Employees */}
-      <View className="mb-15">
+      <View className="mt-10 mb-15">
         <Label>Assign Employees:</Label>
         <View className="w-full p-20 rounded-10 border-[1px] border-grayLowContrast my-5">
           <FlatList
@@ -362,6 +516,52 @@ const AddEvent = (props) => {
             }}
           />
         </View>
+      </View>
+
+      <View className="flex flex-col mb-10">
+        <Label>Attach files:</Label>
+        <TouchableOpacity
+          className="p-20 rounded-20 border-grayLowContrast border-[1px] flex flex-row items-center justify-start bg-grayLowContrast"
+          onPress={() => {
+            pickDocument();
+          }}
+        >
+          <AntDesign
+            name="addfile"
+            size={24}
+            color={Colors.grayHighContranst}
+          />
+          <Text className="ml-10 font-medium text-grayHighContranst">
+            Add up to three files *
+          </Text>
+        </TouchableOpacity>
+      </View>
+      <View className="flex flex-row flex-wrap items-center mb-50">
+        {selectedFiles.map((file, index) => (
+          <>
+            <TouchableOpacity
+              key={index}
+              className="border-b-[1px] border-grayLowContrast max-w-fit mr-10 flex-row items-center justify-start mb-5"
+            >
+              <Text className="mr-5 font-medium text-grayHighContranst">
+                {file.name}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  setSelectedFiles(
+                    selectedFiles.filter((item, i) => i !== index)
+                  );
+                }}
+              >
+                <Ionicons
+                  name="close-circle-outline"
+                  size={16}
+                  color={Colors.grayHighContranst}
+                />
+              </TouchableOpacity>
+            </TouchableOpacity>
+          </>
+        ))}
       </View>
 
       <Button onPress={handleCreateEvent} loading={loading}>
