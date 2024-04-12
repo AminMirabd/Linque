@@ -18,8 +18,9 @@ const PageContainer = ({
   },
 }) => {
   return keyboardScroll ? (
-    <AlertNotificationRoot>
+    <AlertNotificationRoot keyboardShouldPersistTaps="always">
       <KeyboardAwareScrollView
+        keyboardShouldPersistTaps="always"
         className={`flex-1 w-full h-full bg-white p-screen ${style} `}
         contentContainerStyle={{
           paddingBottom: 100,

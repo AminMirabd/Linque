@@ -21,9 +21,9 @@ const Button = ({
   return (
     <TouchableOpacity
       onPress={onPress}
-      className={`rounded-10 w-[70%] py-15 self-center ${style} ${
+      className={`rounded-10 w-[70%] py-15 self-center ${
         type.toUpperCase() === "TERTIARY" ? "bg-transparent" : "bg-primary "
-      }`}
+      }${style}`}
     >
       {loading ? (
         loadingContent

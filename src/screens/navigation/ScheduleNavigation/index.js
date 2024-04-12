@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import Calendar from "../../Schedule/Calendar";
 import AddEvent from "../../Schedule/Events/AddEvent";
 import ViewEvent from "../../Schedule/Events/ViewEvent";
+import ViewDocument from "../../Schedule/Events/ViewEvent/ViewDocument";
 const Stack = createNativeStackNavigator();
 
 const ScheduleNavigation = () => {
@@ -23,6 +24,7 @@ const ScheduleNavigation = () => {
         initialParams={{ id: null }}
       /> */}
       <Stack.Screen component={ViewEvent} name="ViewEvent" options={{title:"Calendar", headerBackVisible: false,}}/>
+      <Stack.Screen component={ViewDocument} name="ViewDocument" options={{title:"Document", headerBackVisible: true,}}/>
     </Stack.Navigator>
   );
 };

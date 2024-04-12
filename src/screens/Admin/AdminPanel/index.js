@@ -11,7 +11,7 @@ const AdminPanel = (props) => {
       <PanelCard
         title="Add Users"
         description="Create a new user in the app"
-        icon="🧸"
+        icon="🙋‍♂️"
         onPress={() => {
           navigation.navigate("AddUser");
         }}

@@ -30,6 +30,31 @@ export default function Chat({ navigation, route }) {
   const uid = route.params.id;
   const [messages, setMessages] = useState([]);
   const currentUser = auth?.currentUser?.uid;
+  const [keyboardOpen, setKeyboardOpen] = useState(false);
+  const [paddingBottom, setPaddingBottom] = useState(20);
+
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      "keyboardDidShow",
+      () => {
+        setKeyboardOpen(true);
+        setPaddingBottom(0);
+      }
+    );
+
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        setKeyboardOpen(false);
+        setPaddingBottom(23);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -138,31 +163,30 @@ export default function Chat({ navigation, route }) {
       }}
       renderBubble={renderBubble}
       renderAvatar={null}
-      bottomOffset={insets.bottom}
       messagesContainerStyle={{
+        paddingBottom:
+          (keyboardOpen && Platform.OS === "ios" ? paddingBottom : 28) ||
+          (Platform.OS === "android" ? paddingBottom - 100 : 0),
         backgroundColor: Colors.white,
-        paddingBottom: 40,
       }}
-      minInputToolbarHeight={Keyboard.isVisible ? 0 : 40}
-      renderSend={(props) => {
-        return (
-          <Send
-            {...props}
-            containerStyle={{
-              display: "flex",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <MaterialCommunityIcons
-              name="send-circle"
-              size={40}
-              color={"#06BCEE"}
-            />
-          </Send>
-        );
+      bottomOffset={Platform.OS === "ios" ? -20 : -20}
+      textInputProps={{
+        placeholderTextColor: "#888", // Light grey color for the placeholder text
+        multiline: true, // Allow multiple lines
+        autoGrow: true, // Text input grows as the user types more lines
+        style: {
+          backgroundColor: "#f2f2f2", // Light grey background for the text input
+          color: "#000",
+          paddingRight: 190,
+          paddingLeft: 20,
+          paddingTop: Platform.OS === "ios" ? 10 : 5,
+          paddingVertical: Platform.OS === "ios" ? 10 : 5,
+          borderRadius: 20, // Rounded corners for the text input
+          marginBottom: Platform.OS === "ios" ? 25 : 10,
+          marginLeft: 8,
+          marginTop: 10,
+        },
       }}
-      alwaysShowSend
     />
   );
 }
