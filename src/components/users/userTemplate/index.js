@@ -5,10 +5,15 @@ import {
   Image,
   Alert,
   ActivityIndicator,
+  Platform,
 } from "react-native";
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import * as ImagePicker from "expo-image-picker";
 import * as SecureStore from "expo-secure-store";
+import * as Device from "expo-device";
+import * as Notifications from "expo-notifications";
+import Constants from "expo-constants";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { ALERT_TYPE, Dialog } from "react-native-alert-notification";
 import { auth, firebase } from "../../../../firebase";
@@ -22,9 +27,88 @@ import {
 } from "../../../../utils/firebaseOperations";
 import PageContainer from "../../global/pageContainer";
 import Colors from "../../../../utils/Colors";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import { useLogin } from "../../../../context/LoginProvider";
 const keyObjectSaved = "currentSession";
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
+  }),
+});
+
+//Handle notifications
+async function sendPushNotification() {
+  const message = {
+    to: ["ExponentPushToken[BldaCyFzGQtkhz-mWv-RPE]"],
+    sound: "default",
+    title: "Push de prubea",
+    body: "Aca va el cuerpo que queiran 😎😎🥸🤓😏",
+    subtitle: "subtitulo solo ios ???",
+    data: { someData: "que onda por aca?" },
+  };
+
+  await fetch("https://exp.host/--/api/v2/push/send", {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      "Accept-encoding": "gzip, deflate",
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(message),
+  })
+    .then((res) => res.json())
+    .then((resJson) => {
+      console.log("push enviada en un primer inciio", resJson);
+    });
+}
+
+async function registerForPushNotificationsAsync() {
+  let token;
+
+  if (Platform.OS === "android") {
+    Notifications.setNotificationChannelAsync("default", {
+      name: "default",
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: "#FF231F7C",
+    });
+  }
+
+  if (Device.isDevice) {
+    const { status: existingStatus } =
+      await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== "granted") {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== "granted") {
+      alert("Failed to get push token for push notification!");
+      return;
+    }
+    token = await Notifications.getExpoPushTokenAsync({
+      projectId: Constants.expoConfig.extra.projectId,
+    });
+  } else {
+    alert("Must use physical device for Push Notifications");
+  }
+
+  return token.data;
+}
+
+async function schedulePushNotification() {
+  await Notifications.scheduleNotificationAsync({
+    content: {
+      title: "Welcome to Linque 📕",
+      body: "Enjoy your experience with us! 🚀🚀🚀",
+      data: { data: "goes here" },
+      sound: Platform.OS === "android" ? null : "default",
+    },
+    trigger: null,
+  });
+}
 
 const UserTemplate = ({
   userUID,
@@ -47,12 +131,54 @@ const UserTemplate = ({
 
   const [image, setImage] = useState(null);
 
+  const [notification, setNotification] = useState(false);
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+  useEffect(() => {
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        setNotification(notification);
+      });
+
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        console.log(response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
   //Set copy of user data
   useEffect(() => {
     if (userData) {
       setUserEdit(userData);
     }
   }, [userData]);
+
+  useEffect(() => {
+    if (userData.name && isOwnProfile) {
+      registerForPushNotificationsAsync().then(async (token) => {
+        console.log(token);
+        console.log(userData.expoPushToken);
+
+        if (
+          userData.expoPushToken !== token ||
+          userData.expoPushToken === false
+        ) {
+          await updateUserInformation({
+            ...userData,
+            expoPushToken: token,
+          });
+        }
+      });
+    }
+  }, [userData, isOwnProfile]);
 
   //Call get user data function when uid is available
   useEffect(() => {
@@ -229,7 +355,7 @@ const UserTemplate = ({
         onPress={() => {
           setEditMode(!editMode);
         }}
-        style={{backgroundColor: Colors.primary}}
+        style={{ backgroundColor: Colors.primary }}
       >
         <Text className="font-semibold text-center text-white">
           {editMode ? "Cancel" : "Edit"}
@@ -238,16 +364,16 @@ const UserTemplate = ({
 
       {/* User image */}
       <TouchableOpacity
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center', 
-            width: '100%',
-            padding: 20, 
-            backgroundColor: Colors.primary,
-            borderRadius: 20, 
-            marginBottom: 50,
-          }}
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
+          width: "100%",
+          padding: 20,
+          backgroundColor: Colors.primary,
+          borderRadius: 20,
+          marginBottom: 50,
+        }}
         onPress={editMode ? pickImage : () => {}}
       >
         <View className="w-[200px] h-[200px] rounded-full bg-grayLowContrast items-center justify-center overflow-hidden">
@@ -278,7 +404,9 @@ const UserTemplate = ({
             <View className="items-center justify-center rounded-full w-50 h-50 bg-grayLowContrast">
               <Text className="text-white font-bold text-[20px]">➕</Text>
             </View>
-            <Text style={{color: "#fff", paddingTop: 10}} >{userData.photo !== "" ? "Edit" : "Add"} photo</Text>
+            <Text style={{ color: "#fff", paddingTop: 10 }}>
+              {userData.photo !== "" ? "Edit" : "Add"} photo
+            </Text>
           </View>
         )}
       </TouchableOpacity>

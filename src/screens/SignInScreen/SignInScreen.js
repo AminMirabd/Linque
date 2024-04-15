@@ -20,14 +20,13 @@ import {
 } from "react-native-alert-notification";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useLogin } from "../../../context/LoginProvider";
+import { updateUserInformation } from "../../../utils/firebaseOperations";
 const keyObjectSaved = "currentSession";
 
 const SignInScreen = ({ navigation }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const { setIsLoggedIn, setUid } = useLogin();
-
-  //const navigation = useNavigation
 
   useEffect(() => {
     getEncryptedSession(keyObjectSaved);
@@ -42,21 +41,11 @@ const SignInScreen = ({ navigation }) => {
     return unsubscribe;
   }, []);
 
-  // const handleSignUp = () => {
-  //   auth
-  //     .createUserWithEmailAndPassword(email, password)
-  //     .then((userCredentials) => {
-  //       const user = userCredentials.user;
-  //     })
-  //     .catch((error) => alert(error.message));
-  // };
-
   const handleSignIn = (values, actions = false, isLoggedIn = false) => {
     auth
       .signInWithEmailAndPassword(values.email, values.password)
       .then((userCredentials) => {
         setUid(userCredentials.user.uid);
-
         if (!isLoggedIn) {
           encryptSession(
             keyObjectSaved,
@@ -110,6 +99,7 @@ const SignInScreen = ({ navigation }) => {
     });
     setIsLoggedIn(true);
   }
+
   async function getEncryptedSession(key) {
     let resultAux = await SecureStore.getItemAsync(key);
     if (resultAux) {

@@ -119,20 +119,9 @@ const AddEvent = (props) => {
     getAllUsersDB(setEmployees);
   }, []);
 
-  // const onChangeDate = (event, selectedDate) => {
-  //   const currentDate = selectedDate || date;
-  //   setDate(currentDate);
-  // };
-
-  // const onChangeStartTime = (event, selectedTime) => {
-  //   const currentTime = selectedTime || startTime;
-  //   setStartTime(currentTime);
-  // };
-
-  // const onChangeEndTime = (event, selectedTime) => {
-  //   const currentTime = selectedTime || endTime;
-  //   setEndTime(currentTime);
-  // };
+  useEffect(() => {
+    console.log(listEmployeesAssigned, "listEmployeesAssigned");
+  }, [listEmployeesAssigned]);
 
   const combineDateAndTime = (date, time) => {
     let combined = new Date(date);
@@ -220,42 +209,99 @@ const AddEvent = (props) => {
   const handleCreateEvent = async () => {
     setLoading(true);
 
-    const uploadedFileUrls = await uploadFile();
+    // const uploadedFileUrls = await uploadFile();
 
-    console.log(uploadedFileUrls, "url????");
+    // console.log(uploadedFileUrls, "url????");
     const date = getISODateTime();
     const fromDate = date.isoStartDateTime;
     const toDate = date.isoEndDateTime;
 
-    const eventObj = {
-      id: id,
-      title: title,
-      description: description,
-      color: color,
-      employeesAssigned: listEmployeesAssigned,
-      date: {
-        from: fromDate,
-        to: toDate,
-      },
-      location: selectedLocation
-        ? selectedLocation
-        : this.state.initialPosition,
-      files:
-        uploadedFileUrls && uploadedFileUrls.length > 0 ? uploadedFileUrls : [],
-    };
+    // const eventObj = {
+    //   id: id,
+    //   title: title,
+    //   description: description,
+    //   color: color,
+    //   employeesAssigned: listEmployeesAssigned,
+    //   date: {
+    //     from: fromDate,
+    //     to: toDate,
+    //   },
+    //   location: selectedLocation
+    //     ? selectedLocation
+    //     : this.state.initialPosition,
+    //   files:
+    //     uploadedFileUrls && uploadedFileUrls.length > 0 ? uploadedFileUrls : [],
+    // };
 
-    addEventDB(eventObj).then(() => {
-      setLoading(false);
+    // addEventDB(eventObj).then(() => {
+    //   setLoading(false);
+    //   Dialog.show({
+    //     type: ALERT_TYPE.SUCCESS,
+    //     title: `${title} event added`,
+    //     textBody: "The event has been created successfully.",
+    //     button: "Close",
+    //     autoClose: 400,
+    //     onHide: () => navigation.navigate("Calendar"),
+    //   });
+    // });
+    sendPush();
+  };
+
+  const sendPush = async () => {
+    const selectedEmployeesExpoTokens = employees
+      .filter((employee) => listEmployeesAssigned.includes(employee.UID))
+      .map((employee) => employee.expoPushToken);
+
+    let uniqueTokens = selectedEmployeesExpoTokens.filter(
+      (value, index, array) =>
+        array.indexOf(value) === index && value !== undefined
+    );
+
+    // Creating an array of messages for each unique token
+    let messages = uniqueTokens.map((token) => ({
+      to: token,
+      sound: "default",
+      title: "You have a new shift!",
+      body: "You have been assigned to a new shift.",
+      data: {},
+    }));
+
+    // Sending messages to the Expo push notification service
+    let response = await fetch("https://exp.host/--/api/v2/push/send", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        "Accept-encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(messages),
+    });
+
+    try {
+      let resJson = await response.json();
+      console.log("resJson", resJson);
       Dialog.show({
         type: ALERT_TYPE.SUCCESS,
-        title: `${title} event added`,
-        textBody: "The event has been created successfully.",
-        button: "Close",
+        title: "Acción Exitosa",
+        textBody: "Se ha enviado la notificación!",
+        button: "Cerrar",
         autoClose: 400,
-        onHide: () => navigation.navigate("Calendar"),
       });
-    });
+      console.log("éxito");
+    } catch (error) {
+      alert("Ups, ha ocurrido un error enviando las notificaciones.");
+      console.log("catch envío de push", error);
+    }
   };
+
+  function expoChunkPushNotifications(notifications) {
+    let chunks = [];
+    let chunkSize = 50; // Expo recommends sending batches of 50 notifications
+    for (let i = 0; i < notifications.length; i += chunkSize) {
+      chunks.push(notifications.slice(i, i + chunkSize));
+    }
+    return chunks;
+  }
 
   const itemSeparator = () => {
     return <View className="h-[1px] bg-grayLowContrast w-full" />;

@@ -20,20 +20,6 @@ import {
 import { getStorage, ref, deleteObject, uploadBytes } from "firebase/storage";
 
 //Add functions
-//
-// export const requestToTakeShift = async (eventId, employeeId) => {
-//   const shiftRequestRef = collection(database, "shiftRequests");
-//   try {
-//     await addDoc(shiftRequestRef, {
-//       eventId: eventId,
-//       employeeId: employeeId,
-//       requestedAt: serverTimestamp() // To record when the request was made
-//     });
-//     console.log("Shift request successfully made");
-//   } catch (error) {
-//     console.error("Error making shift request:", error);
-//   }
-// };
 export const requestToTakeShift = async (eventId, employeeId) => {
   const eventRequestRef = doc(database, "shiftRequests", eventId);
   try {
@@ -204,7 +190,6 @@ export const getLastMessagaDB = async (chatId, setLastMessage) => {
     }
   });
 };
-
 export const getMessagesDB = (chatId, setMessages) => {
   const messagesRef = collection(database, "chatrooms", chatId, "messages");
 
