@@ -32,7 +32,7 @@ The application is primarily intended for:
 1. **Event Management**: Staff can view upcoming events, add new events, and edit details for better planning and execution.
 2. **Shift Scheduling**: Ambassadors can sign up for shifts, view their schedules, and receive notifications about upcoming commitments.
 3. **Document Uploads**: Users can upload, view, and download necessary documents directly through the app, streamlining the documentation process.
-4. **In-App Messaging**: The app includes a messaging feature, allowing for instant communication between ambassadors and coordinators to address any concerns or changes.
+4. **In-App Messaging**: The app includes a messaging feature allowing for instant communication between ambassadors and coordinators to address any concerns or changes.
 
 ## License
 
