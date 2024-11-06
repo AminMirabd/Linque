@@ -19,7 +19,7 @@ This mobile application serves as a comprehensive tool to enhance the efficiency
 - **Event Management**: Enables staff to organize and oversee international student events with ease.
 - **Shift Scheduling**: Allows ambassadors to manage their shifts, ensuring efficient staffing for events.
 - **Document Uploads**: Provides a platform for uploading and accessing necessary documents related to events.
-- **In-App Messaging**: Facilitates real-time communication among the staff, improving coordination and feedback.
+- **In-App Messaging**: Facilitates real-time communication among the staff improving coordination and feedback.
 
 ## Audience
 
