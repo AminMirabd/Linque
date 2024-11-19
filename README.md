@@ -10,6 +10,7 @@ https://github.com/AminMirabd/Linque/assets/117770417/26512bec-2aa2-42e5-be6a-07
 
 Linque is crafted for the Waterloo Catholic District School Board staff, particularly International Ambassadors and Coordinators. It aims to streamline the management of international student events, facilitating better organization, communication, and documentation.
 
+
 ## Purpose
 
 This mobile application serves as a comprehensive tool to enhance the efficiency of managing tasks related to international student events. It is designed to address the specific needs of International Ambassadors and Coordinators, aiding them in scheduling, documentation, and communication.
