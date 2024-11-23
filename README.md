@@ -1,4 +1,4 @@
-# Linque, An Employee Management App for Waterloo Catholic District School Board
+# Linque, An Employee Management Application for Waterloo Catholic District School Board
 
 
 
