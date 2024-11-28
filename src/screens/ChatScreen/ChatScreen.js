@@ -19,7 +19,6 @@ import { useNavigation } from '@react-navigation/native';
 import { AntDesign } from '@expo/vector-icons';
 import { User } from '../../models/User';
 
-
 export default function Chat() {
 
   const [messages, setMessages] = useState([]);
@@ -43,6 +42,7 @@ export default function Chat() {
 //         )
 //       });
 //     }, [navigation]);
+  
 
   useLayoutEffect(() => {
 
